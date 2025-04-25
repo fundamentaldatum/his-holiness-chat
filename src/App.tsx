@@ -87,7 +87,7 @@ class ModelErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBounda
 // The actual model component
 function Model() {
   const { scene } = useGLTF('/pope_francis.glb');
-  return <primitive object={scene} scale={1.75} />;
+  return <primitive object={scene} scale={2.5} />;
 }
 
 function AbsolveModal({
