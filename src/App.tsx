@@ -1,9 +1,8 @@
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, Suspense, ReactNode } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../convex/_generated/api";
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls } from "@react-three/drei";
-import { useGLTF } from "@react-three/drei";
+import { OrbitControls, useGLTF, Html } from "@react-three/drei";
 import { ChatInput } from "./components/ChatInput";
 import { ChatMessage } from "./components/ChatMessage";
 import { FireOverlay3D } from "./components/FireOverlay3D";
@@ -26,29 +25,69 @@ function createCheckerboardTexture(size = 256, squares = 8) {
   return texture;
 }
 
-function Model() {
-  const [modelError, setModelError] = useState(false);
-  try {
-    const { scene } = useGLTF('/pope_francis.glb');
-    return <primitive object={scene} scale={1.75} />;
-  } catch (error) {
-    console.error('Error loading model:', error);
-    if (!modelError) {
-      setModelError(true);
-    }
-    // Checkerboard texture for placeholder
-    const texture = createCheckerboardTexture();
-    return (
-      <mesh>
-        <sphereGeometry args={[1, 32, 32]} />
-        <meshStandardMaterial
-          map={texture}
-          metalness={0.2}
-          roughness={0.7}
-        />
-      </mesh>
-    );
+// Preload the model
+useGLTF.preload('/pope_francis.glb');
+
+// Loading component to show while the model is loading
+function ModelLoader() {
+  return (
+    <Html center>
+      <div className="text-white text-center">
+        <div className="mb-2 almendra-font">Loading His Holiness...</div>
+        <div className="w-12 h-12 border-t-2 border-b-2 border-yellow-400 rounded-full animate-spin mx-auto"></div>
+      </div>
+    </Html>
+  );
+}
+
+// Fallback component for when model loading fails
+function ModelFallback() {
+  // Checkerboard texture for placeholder
+  const texture = createCheckerboardTexture();
+  return (
+    <mesh>
+      <sphereGeometry args={[1, 32, 32]} />
+      <meshStandardMaterial
+        map={texture}
+        metalness={0.2}
+        roughness={0.7}
+      />
+    </mesh>
+  );
+}
+
+// Error boundary for 3D model rendering
+interface ErrorBoundaryProps {
+  children: ReactNode;
+}
+
+interface ErrorBoundaryState {
+  hasError: boolean;
+}
+
+class ModelErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  constructor(props: ErrorBoundaryProps) {
+    super(props);
+    this.state = { hasError: false };
   }
+
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+    console.error('Error in 3D model rendering:', error);
+    return { hasError: true };
+  }
+
+  render(): ReactNode {
+    if (this.state.hasError) {
+      return <ModelFallback />;
+    }
+    return this.props.children;
+  }
+}
+
+// The actual model component
+function Model() {
+  const { scene } = useGLTF('/pope_francis.glb');
+  return <primitive object={scene} scale={1.75} />;
 }
 
 function AbsolveModal({
@@ -139,7 +178,11 @@ function ChatRoom() {
               <Canvas camera={{ position: [0, 0, 5] }}>
                 <ambientLight intensity={0.5} />
                 <pointLight position={[10, 10, 10]} />
-                <Model />
+                <Suspense fallback={<ModelLoader />}>
+                  <ModelErrorBoundary>
+                    <Model />
+                  </ModelErrorBoundary>
+                </Suspense>
                 <OrbitControls
                   makeDefault
                   enableZoom={false}
