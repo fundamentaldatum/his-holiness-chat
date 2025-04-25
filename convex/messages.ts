@@ -5,32 +5,41 @@ import OpenAI from "openai";
 import type { ChatCompletionMessageParam } from "openai/resources/chat/completions";
 
 export const list = query({
-  args: {},
-  handler: async (ctx) => {
-    return await ctx.db.query("messages").order("asc").collect();
+  args: { userId: v.string() },
+  handler: async (ctx, { userId }) => {
+    return await ctx.db
+      .query("messages")
+      .filter(q => q.eq(q.field("userId"), userId))
+      .order("asc")
+      .collect();
   },
 });
 
 export const send = mutation({
-  args: { body: v.string(), author: v.string() },
-  handler: async (ctx, { body, author }) => {
+  args: { body: v.string(), author: v.string(), userId: v.string() },
+  handler: async (ctx, { body, author, userId }) => {
     await ctx.db.insert("messages", {
       body,
       author,
+      userId,
     });
     // Only generate a bot reply if the message is from "the Penitent"
     if (author === "the Penitent") {
       await ctx.scheduler.runAfter(0, api.messages.generateBotReply, {
         userMessage: body,
+        userId, // Pass userId to the bot reply generator
       });
     }
   },
 });
 
 export const clear = mutation({
-  args: {},
-  handler: async (ctx) => {
-    const messages = await ctx.db.query("messages").collect();
+  args: { userId: v.string() },
+  handler: async (ctx, { userId }) => {
+    const messages = await ctx.db
+      .query("messages")
+      .filter(q => q.eq(q.field("userId"), userId))
+      .collect();
     for (const msg of messages) {
       await ctx.db.delete(msg._id);
     }
@@ -38,18 +47,19 @@ export const clear = mutation({
 });
 
 export const sendBotMessage = mutation({
-  args: { body: v.string() },
-  handler: async (ctx, { body }) => {
+  args: { body: v.string(), userId: v.string() },
+  handler: async (ctx, { body, userId }) => {
     await ctx.db.insert("messages", {
       body,
       author: "Pope Francis",
+      userId,
     });
   },
 });
 
 export const generateBotReply = action({
-  args: { userMessage: v.string() },
-  handler: async (ctx, { userMessage }) => {
+  args: { userMessage: v.string(), userId: v.string() },
+  handler: async (ctx, { userMessage, userId }) => {
     const openai = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY,
     });
@@ -97,7 +107,7 @@ Remember: You're not trying to be clever or self-aware about your situation - yo
         throw new Error("No response content");
       }
 
-      await ctx.runMutation(api.messages.sendBotMessage, { body: botReply });
+      await ctx.runMutation(api.messages.sendBotMessage, { body: botReply, userId });
     } catch (err: any) {
       console.error("OpenAI API Error:", err);
       console.error("Full error object:", JSON.stringify(err, null, 2));
@@ -109,7 +119,7 @@ Remember: You're not trying to be clever or self-aware about your situation - yo
         errorMessage = "Oh dear... the spinning seems to have affected my... what do they call it... digital permissions? *looks confused*";
       }
       
-      await ctx.runMutation(api.messages.sendBotMessage, { body: errorMessage });
+      await ctx.runMutation(api.messages.sendBotMessage, { body: errorMessage, userId });
     }
   },
 });

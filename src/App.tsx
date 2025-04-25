@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, Suspense, ReactNode } from "react";
+import React, { useEffect, useRef, useState, Suspense, ReactNode, useMemo } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../convex/_generated/api";
 import { Canvas } from "@react-three/fiber";
@@ -23,6 +23,16 @@ function createCheckerboardTexture(size = 256, squares = 8) {
   const texture = new THREE.Texture(canvas);
   texture.needsUpdate = true;
   return texture;
+}
+
+// Function to get or create a unique user ID
+function getUserId() {
+  let userId = localStorage.getItem('popeUserId');
+  if (!userId) {
+    userId = crypto.randomUUID(); // Generate a UUID
+    localStorage.setItem('popeUserId', userId);
+  }
+  return userId;
 }
 
 // Preload the model
@@ -126,7 +136,11 @@ function AbsolveModal({
 }
 
 function ChatRoom() {
-  const messages = useQuery(api.messages.list) || [];
+  // Get or create user ID
+  const userId = useMemo(() => getUserId(), []);
+  
+  // Pass userId to the list query
+  const messages = useQuery(api.messages.list, { userId }) || [];
   const sendMessage = useMutation(api.messages.send);
   const clearMessages = useMutation(api.messages.clear);
   const chatContainerRef = useRef<HTMLDivElement>(null);
@@ -147,7 +161,7 @@ function ChatRoom() {
     setShowAbsolveModal(false);
     setIsBurning(true);
     setTimeout(() => {
-      clearMessages();
+      clearMessages({ userId });
       setIsBurning(false);
     }, 1500); // Match the duration of the burning animation
   };
@@ -263,6 +277,7 @@ function ChatRoom() {
                   await sendMessage({
                     body,
                     author: "the Penitent",
+                    userId,
                   });
                 }} />
                 <button

@@ -6,6 +6,7 @@ const applicationTables = {
   messages: defineTable({
     body: v.string(),
     author: v.string(),
+    userId: v.string(), // Add userId field to identify which user the message belongs to
   }),
 };
 
