@@ -5,41 +5,68 @@ import OpenAI from "openai";
 import type { ChatCompletionMessageParam } from "openai/resources/chat/completions";
 
 export const list = query({
-  args: { userId: v.string() },
+  args: { userId: v.optional(v.string()) },
   handler: async (ctx, { userId }) => {
+    // If userId is provided, filter by userId
+    if (userId) {
+      return await ctx.db
+        .query("messages")
+        .filter(q => q.eq(q.field("userId"), userId))
+        .order("asc")
+        .collect();
+    }
+    // Otherwise, return all messages (backward compatibility)
     return await ctx.db
       .query("messages")
-      .filter(q => q.eq(q.field("userId"), userId))
       .order("asc")
       .collect();
   },
 });
 
 export const send = mutation({
-  args: { body: v.string(), author: v.string(), userId: v.string() },
+  args: { body: v.string(), author: v.string(), userId: v.optional(v.string()) },
   handler: async (ctx, { body, author, userId }) => {
-    await ctx.db.insert("messages", {
+    // Insert message with or without userId
+    const messageData: any = {
       body,
       author,
-      userId,
-    });
+    };
+    
+    // Add userId if provided
+    if (userId) {
+      messageData.userId = userId;
+    }
+    
+    await ctx.db.insert("messages", messageData);
+    
     // Only generate a bot reply if the message is from "the Penitent"
     if (author === "the Penitent") {
       await ctx.scheduler.runAfter(0, api.messages.generateBotReply, {
         userMessage: body,
-        userId, // Pass userId to the bot reply generator
+        userId, // Pass userId to the bot reply generator (can be undefined)
       });
     }
   },
 });
 
 export const clear = mutation({
-  args: { userId: v.string() },
+  args: { userId: v.optional(v.string()) },
   handler: async (ctx, { userId }) => {
-    const messages = await ctx.db
-      .query("messages")
-      .filter(q => q.eq(q.field("userId"), userId))
-      .collect();
+    let messages;
+    
+    // If userId is provided, filter by userId
+    if (userId) {
+      messages = await ctx.db
+        .query("messages")
+        .filter(q => q.eq(q.field("userId"), userId))
+        .collect();
+    } else {
+      // Otherwise, get all messages (backward compatibility)
+      messages = await ctx.db
+        .query("messages")
+        .collect();
+    }
+    
     for (const msg of messages) {
       await ctx.db.delete(msg._id);
     }
@@ -47,18 +74,25 @@ export const clear = mutation({
 });
 
 export const sendBotMessage = mutation({
-  args: { body: v.string(), userId: v.string() },
+  args: { body: v.string(), userId: v.optional(v.string()) },
   handler: async (ctx, { body, userId }) => {
-    await ctx.db.insert("messages", {
+    // Insert message with or without userId
+    const messageData: any = {
       body,
       author: "Pope Francis",
-      userId,
-    });
+    };
+    
+    // Add userId if provided
+    if (userId) {
+      messageData.userId = userId;
+    }
+    
+    await ctx.db.insert("messages", messageData);
   },
 });
 
 export const generateBotReply = action({
-  args: { userMessage: v.string(), userId: v.string() },
+  args: { userMessage: v.string(), userId: v.optional(v.string()) },
   handler: async (ctx, { userMessage, userId }) => {
     const openai = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY,

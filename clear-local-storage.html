@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clear localStorage</title>
+</head>
+<body>
+    <h1>Clearing localStorage...</h1>
+    <script>
+        // Clear localStorage
+        localStorage.removeItem('popeUserId');
+        
+        // Redirect to the app
+        setTimeout(() => {
+            window.location.href = 'http://localhost:5173/';
+        }, 1000);
+    </script>
+</body>
+</html>

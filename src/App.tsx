@@ -139,10 +139,13 @@ function ChatRoom() {
   // Get or create user ID
   const userId = useMemo(() => getUserId(), []);
   
-  // Pass userId to the list query
+  // Get messages with userId
   const messages = useQuery(api.messages.list, { userId }) || [];
+  
+  // Mutations
   const sendMessage = useMutation(api.messages.send);
   const clearMessages = useMutation(api.messages.clear);
+  
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const [isBurning, setIsBurning] = useState(false);
   const [showAbsolveModal, setShowAbsolveModal] = useState(false);
@@ -168,6 +171,15 @@ function ChatRoom() {
 
   const handleCancelAbsolve = () => {
     setShowAbsolveModal(false);
+  };
+
+  // Handle sending messages
+  const handleSendMessage = async (body: string) => {
+    await sendMessage({
+      body,
+      author: "the Penitent",
+      userId,
+    });
   };
 
   return (
@@ -273,13 +285,7 @@ function ChatRoom() {
               </div>
               {/* Input and Buttons */}
               <div className="flex gap-2 w-full pb-2 xs:pb-3 sm:pb-4">
-                <ChatInput onSubmit={async (body) => {
-                  await sendMessage({
-                    body,
-                    author: "the Penitent",
-                    userId,
-                  });
-                }} />
+                <ChatInput onSubmit={handleSendMessage} />
                 <button
                   onClick={handleClear}
                   className="almendra-font px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
