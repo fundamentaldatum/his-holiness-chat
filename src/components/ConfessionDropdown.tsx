@@ -149,31 +149,97 @@ export function ConfessionDropdown({ onSelect, disabled, type = 'venial', mobile
   const handleMobileSelect = (confession: string) => {
     console.log("Mobile confession selected:", confession);
     
-    // Ensure the onSelect callback is called with the selected confession
-    onSelect(confession);
+    // First, try to find all input fields in the document to debug
+    const allInputs = document.querySelectorAll('input');
+    console.log(`Found ${allInputs.length} input fields in the document`);
     
-    // Try to directly update the input field as a fallback
-    setTimeout(() => {
-      // Find the input field in the DOM
-      const inputField = document.querySelector('input[placeholder="What troubles you, my son..."]');
+    // More aggressive approach for mobile
+    const updateInputField = () => {
+      // Try multiple selectors to find the input field
+      const inputSelectors = [
+        'input[placeholder="What troubles you, my son..."]',
+        'input.almendra-font',
+        'form input',
+        '.w-full input'
+      ];
+      
+      let inputField = null;
+      
+      // Try each selector until we find the input field
+      for (const selector of inputSelectors) {
+        const fields = document.querySelectorAll(selector);
+        console.log(`Selector "${selector}" found ${fields.length} elements`);
+        
+        if (fields.length > 0) {
+          inputField = fields[0];
+          console.log(`Found input field with selector: ${selector}`);
+          break;
+        }
+      }
+      
       if (inputField) {
-        console.log("ConfessionDropdown: Found input field, setting value directly");
+        console.log("Mobile: Found input field, setting value directly to:", confession);
+        
         // Set the value directly
         (inputField as HTMLInputElement).value = confession;
         
         // Focus the input field
         (inputField as HTMLInputElement).focus();
         
-        // Dispatch an input event to ensure React's state is updated
-        const event = new Event('input', { bubbles: true });
-        inputField.dispatchEvent(event);
+        // Try multiple approaches to update React's state
+        
+        // 1. Dispatch an input event
+        const inputEvent = new Event('input', { bubbles: true });
+        inputField.dispatchEvent(inputEvent);
+        
+        // 2. Dispatch a change event
+        const changeEvent = new Event('change', { bubbles: true });
+        inputField.dispatchEvent(changeEvent);
+        
+        // 3. Call the onSelect callback again after setting the value directly
+        setTimeout(() => {
+          onSelect(confession);
+        }, 10);
+        
+        return true;
       } else {
-        console.log("ConfessionDropdown: Input field not found in DOM");
+        console.log("Mobile: Input field not found in DOM with any selector");
+        return false;
       }
-      
-      // Close the dropdown after setting the value
-      setIsOpen(false);
-    }, 50);
+    };
+    
+    // Call onSelect first
+    onSelect(confession);
+    
+    // Try to update the input field immediately
+    let success = updateInputField();
+    
+    // If not successful, try again after a short delay
+    if (!success) {
+      setTimeout(() => {
+        console.log("Mobile: Retrying input field update after delay");
+        success = updateInputField();
+        
+        // If still not successful, try one more time with a longer delay
+        if (!success) {
+          setTimeout(() => {
+            console.log("Mobile: Final attempt to update input field");
+            updateInputField();
+            
+            // Close the dropdown regardless of success
+            setIsOpen(false);
+          }, 100);
+        } else {
+          // Close the dropdown after success
+          setIsOpen(false);
+        }
+      }, 50);
+    } else {
+      // Close the dropdown after success
+      setTimeout(() => {
+        setIsOpen(false);
+      }, 50);
+    }
   };
 
   // Render the dropdown menu
@@ -201,7 +267,12 @@ export function ConfessionDropdown({ onSelect, disabled, type = 'venial', mobile
               <button
                 key={index}
                 className="w-full text-left px-3 py-3 text-sm text-white almendra-font hover:bg-gray-700 focus:outline-none border-b border-gray-700"
-                onClick={() => handleMobileSelect(confession)}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  console.log("Mobile confession button clicked:", confession);
+                  handleMobileSelect(confession);
+                }}
               >
                 {confession}
               </button>

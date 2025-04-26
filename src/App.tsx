@@ -579,7 +579,7 @@ function ChatRoom() {
         {/* Mobile-specific full-width input and buttons */}
         <div className="w-full sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-gray-900/95 border-t border-gray-800 pb-safe">
           {/* Input Field - Full Width */}
-          <div className="w-full px-3 pt-3">
+          <div className="w-full px-3 pt-3" id="mobile-input-container">
             <ChatInput ref={chatInputRef} onSubmit={handleSendMessage} />
           </div>
           
@@ -598,8 +598,78 @@ function ChatRoom() {
             >
               CONFESS
             </button>
-            <ConfessionDropdown onSelect={handleSelectConfession} disabled={isBurning} type="venial" mobile={true} />
-            <ConfessionDropdown onSelect={handleSelectConfession} disabled={isBurning} type="mortal" mobile={true} />
+            <ConfessionDropdown 
+              onSelect={(confession) => {
+                console.log("Mobile dropdown onSelect called with:", confession);
+                
+                // Call the regular handler
+                handleSelectConfession(confession);
+                
+                // Additional mobile-specific handling
+                setTimeout(() => {
+                  // Try to find the mobile input field specifically
+                  const mobileInputContainer = document.getElementById('mobile-input-container');
+                  if (mobileInputContainer) {
+                    const inputField = mobileInputContainer.querySelector('input');
+                    if (inputField) {
+                      console.log("Found mobile input field directly, setting value to:", confession);
+                      
+                      // Set the value directly
+                      (inputField as HTMLInputElement).value = confession;
+                      
+                      // Focus the input field
+                      (inputField as HTMLInputElement).focus();
+                      
+                      // Dispatch events to ensure React's state is updated
+                      const inputEvent = new Event('input', { bubbles: true });
+                      inputField.dispatchEvent(inputEvent);
+                      
+                      const changeEvent = new Event('change', { bubbles: true });
+                      inputField.dispatchEvent(changeEvent);
+                    }
+                  }
+                }, 10);
+              }} 
+              disabled={isBurning} 
+              type="venial" 
+              mobile={true} 
+            />
+            <ConfessionDropdown 
+              onSelect={(confession) => {
+                console.log("Mobile dropdown onSelect called with:", confession);
+                
+                // Call the regular handler
+                handleSelectConfession(confession);
+                
+                // Additional mobile-specific handling
+                setTimeout(() => {
+                  // Try to find the mobile input field specifically
+                  const mobileInputContainer = document.getElementById('mobile-input-container');
+                  if (mobileInputContainer) {
+                    const inputField = mobileInputContainer.querySelector('input');
+                    if (inputField) {
+                      console.log("Found mobile input field directly, setting value to:", confession);
+                      
+                      // Set the value directly
+                      (inputField as HTMLInputElement).value = confession;
+                      
+                      // Focus the input field
+                      (inputField as HTMLInputElement).focus();
+                      
+                      // Dispatch events to ensure React's state is updated
+                      const inputEvent = new Event('input', { bubbles: true });
+                      inputField.dispatchEvent(inputEvent);
+                      
+                      const changeEvent = new Event('change', { bubbles: true });
+                      inputField.dispatchEvent(changeEvent);
+                    }
+                  }
+                }, 10);
+              }} 
+              disabled={isBurning} 
+              type="mortal" 
+              mobile={true} 
+            />
             <button
               onClick={handleClear}
               className="almendra-font text-xs whitespace-nowrap px-2 py-2 bg-green-600 text-white rounded hover:bg-green-700 flex-1 mx-1"
