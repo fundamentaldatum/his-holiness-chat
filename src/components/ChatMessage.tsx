@@ -44,16 +44,16 @@ export function ChatMessage({ author, body, time }: ChatMessageProps) {
   }, [body, author]);
 
   return (
-    <div className="mb-4">
+    <div className="mb-3 sm:mb-4">
       <div className="flex items-baseline gap-2">
-        <span className={`font-bold ${author === "the Penitent" ? "text-yellow-200" : "almendra-font text-indigo-300"}`}>
+        <span className={`font-bold text-sm xs:text-base ${author === "the Penitent" ? "text-yellow-200" : "almendra-font text-indigo-300"}`}>
           {author}
         </span>
-        <span className="text-xs text-gray-500">
+        <span className="text-[10px] xs:text-xs text-gray-500">
           {format(time, "h:mm a")}
         </span>
       </div>
-      <div className="mt-1 text-gray-100">
+      <div className="mt-1 text-gray-100 text-sm xs:text-base">
         {author === "Pope Francis" ? (
           <>
             {displayedText}

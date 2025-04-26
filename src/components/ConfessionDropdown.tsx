@@ -87,7 +87,7 @@ export function ConfessionDropdown({ onSelect, disabled, type = 'venial' }: Conf
         ref={buttonRef}
         type="button"
         onClick={toggleDropdown}
-        className={`almendra-font px-4 py-2 ${type === 'venial' ? 'bg-yellow-600 hover:bg-yellow-700' : 'bg-red-700 hover:bg-red-800'} text-white rounded`}
+        className={`almendra-font text-sm xs:text-base px-3 xs:px-4 py-2 ${type === 'venial' ? 'bg-yellow-600 hover:bg-yellow-700' : 'bg-red-700 hover:bg-red-800'} text-white rounded`}
         disabled={disabled}
       >
         {type === 'venial' ? 'VENIAL SINS' : 'MORTAL SINS'}
@@ -96,15 +96,15 @@ export function ConfessionDropdown({ onSelect, disabled, type = 'venial' }: Conf
       {isOpen && (
         <div 
           ref={menuRef}
-          className={`absolute z-50 w-64 bg-gray-800 border border-yellow-700 rounded-md shadow-lg overflow-hidden ${
+          className={`absolute z-50 w-[250px] xs:w-64 bg-gray-800 border border-yellow-700 rounded-md shadow-lg overflow-hidden ${
             dropDirection === 'up' ? 'bottom-full mb-2' : 'top-full mt-2'
-          }`}
+          } right-0 xs:right-auto`}
         >
           <div className="max-h-60 overflow-y-auto">
             {confessions.map((confession, index) => (
               <button
                 key={index}
-                className="w-full text-left px-4 py-2 text-white almendra-font hover:bg-gray-700 focus:outline-none"
+                className="w-full text-left px-3 py-2 text-sm xs:text-base text-white almendra-font hover:bg-gray-700 focus:outline-none"
                 onClick={() => handleSelect(confession)}
               >
                 {confession}

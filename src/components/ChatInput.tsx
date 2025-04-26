@@ -44,7 +44,7 @@ export const ChatInput = forwardRef(function ChatInput(
       onSubmit={handleSubmit}
     >
       <input
-        className="w-full px-4 py-2 rounded border bg-white text-black almendra-font placeholder-gray-400 placeholder:almendra-font"
+        className="w-full px-3 xs:px-4 py-2 rounded border bg-white text-black text-sm xs:text-base almendra-font placeholder-gray-400 placeholder:almendra-font placeholder:text-sm xs:placeholder:text-base"
         type="text"
         value={value}
         onChange={(e) => setValue(e.target.value)}

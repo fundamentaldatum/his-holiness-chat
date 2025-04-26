@@ -425,11 +425,11 @@ function ChatRoom() {
         </h1>
       </header>
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col items-center justify-center w-full px-2 sm:px-6 md:px-12 lg:px-24 xl:px-32 py-4">
-        <div className="w-full max-w-5xl flex flex-row gap-6 sm:gap-8 md:gap-12 items-stretch">
+      <main className="flex-1 flex flex-col items-center justify-center w-full px-2 sm:px-4 md:px-8 lg:px-16 xl:px-24 py-2 sm:py-4">
+        <div className="w-full max-w-5xl flex flex-row gap-2 xs:gap-3 sm:gap-6 md:gap-8 lg:gap-12 items-stretch">
           {/* 3D Model */}
-          <div className="w-1/2 flex flex-col items-center justify-start pt-6">
-            <div className="w-full h-80 xs:h-88 sm:h-96 md:h-[28rem] lg:h-[32rem] relative">
+          <div className="w-[45%] sm:w-[48%] md:w-1/2 flex flex-col items-center justify-start pt-2 sm:pt-4 md:pt-6">
+            <div className="w-full h-[40vh] xs:h-[45vh] sm:h-[50vh] md:h-[55vh] lg:h-[60vh] relative">
               <Canvas camera={{ position: [0, 0, 5] }}>
                 <ambientLight intensity={0.5} />
                 <pointLight position={[10, 10, 10]} />
@@ -439,20 +439,20 @@ function ChatRoom() {
                   </ModelErrorBoundary>
                 </Suspense>
               </Canvas>
-              <div className="text-center -mt-8 relative z-10">
-                <h2 className="text-lg xs:text-xl sm:text-2xl almendra-font text-indigo-300">🕊️Pope Francis🕊️</h2>
+              <div className="text-center -mt-6 sm:-mt-8 relative z-10">
+                <h2 className="text-base xs:text-lg sm:text-xl md:text-2xl almendra-font text-indigo-300">🕊️Pope Francis🕊️</h2>
               </div>
             </div>
           </div>
           {/* Chat Section */}
-          <div className="w-1/2 flex flex-col flex-1 min-h-0">
+          <div className="w-[55%] sm:w-[52%] md:w-1/2 flex flex-col flex-1 min-h-0">
             <div className="flex flex-col flex-1 min-h-0 relative">
               {/* Chat Messages Container with consistent dimensions for all devices */}
               <div
                 ref={chatContainerRef}
                 className="flex-1 overflow-y-auto p-2 xs:p-3 sm:p-4 rounded chat-card border 
-                  min-h-[28rem] 
-                  h-[70vh]
+                  min-h-[40vh] xs:min-h-[45vh] sm:min-h-[50vh] md:min-h-[55vh] lg:min-h-[60vh]
+                  h-[40vh] xs:h-[45vh] sm:h-[50vh] md:h-[55vh] lg:h-[60vh]
                   relative pb-4 chat-container-with-padding"
               >
                 {/* 3D Fire effect overlays */}
@@ -519,7 +519,7 @@ function ChatRoom() {
                     </div>
                     
                     {/* Buttons */}
-                    <div className="flex justify-center gap-4 w-full py-2 xs:py-3">
+                    <div className="flex flex-wrap justify-center gap-2 xs:gap-3 sm:gap-4 w-full py-2 xs:py-3">
                       <button
                         onClick={() => {
                           if (chatInputRef.current) {
@@ -528,7 +528,7 @@ function ChatRoom() {
                             });
                           }
                         }}
-                        className="almendra-font px-4 py-2 bg-indigo-700 text-white rounded hover:bg-indigo-800"
+                        className="almendra-font text-sm xs:text-base px-3 xs:px-4 py-2 bg-indigo-700 text-white rounded hover:bg-indigo-800"
                         disabled={isBurning}
                       >
                         CONFESS
@@ -537,7 +537,7 @@ function ChatRoom() {
                       <ConfessionDropdown onSelect={handleSelectConfession} disabled={isBurning} type="mortal" />
                       <button
                         onClick={handleClear}
-                        className="almendra-font px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                        className="almendra-font text-sm xs:text-base px-3 xs:px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
                         disabled={isBurning}
                       >
                         ABSOLVE
