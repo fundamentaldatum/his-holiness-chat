@@ -112,11 +112,31 @@ export function ConfessionDropdown({ onSelect, disabled, type = 'venial', mobile
   }, [isOpen, mobile]);
 
   const handleSelect = (confession: string) => {
+    console.log("Desktop confession selected:", confession);
+    
     // Call onSelect first to ensure the input field is updated
     onSelect(confession);
     
-    // Add a small delay before closing the dropdown to ensure the selection is processed
+    // Try to directly update the input field as a fallback
     setTimeout(() => {
+      // Find the input field in the DOM
+      const inputField = document.querySelector('input[placeholder="What troubles you, my son..."]');
+      if (inputField) {
+        console.log("ConfessionDropdown (desktop): Found input field, setting value directly");
+        // Set the value directly
+        (inputField as HTMLInputElement).value = confession;
+        
+        // Focus the input field
+        (inputField as HTMLInputElement).focus();
+        
+        // Dispatch an input event to ensure React's state is updated
+        const event = new Event('input', { bubbles: true });
+        inputField.dispatchEvent(event);
+      } else {
+        console.log("ConfessionDropdown (desktop): Input field not found in DOM");
+      }
+      
+      // Close the dropdown after setting the value
       setIsOpen(false);
     }, 50);
   };
@@ -127,11 +147,31 @@ export function ConfessionDropdown({ onSelect, disabled, type = 'venial', mobile
 
   // Handle mobile selection separately to ensure it works with the portal
   const handleMobileSelect = (confession: string) => {
+    console.log("Mobile confession selected:", confession);
+    
     // Ensure the onSelect callback is called with the selected confession
     onSelect(confession);
     
-    // Close the dropdown after a small delay
+    // Try to directly update the input field as a fallback
     setTimeout(() => {
+      // Find the input field in the DOM
+      const inputField = document.querySelector('input[placeholder="What troubles you, my son..."]');
+      if (inputField) {
+        console.log("ConfessionDropdown: Found input field, setting value directly");
+        // Set the value directly
+        (inputField as HTMLInputElement).value = confession;
+        
+        // Focus the input field
+        (inputField as HTMLInputElement).focus();
+        
+        // Dispatch an input event to ensure React's state is updated
+        const event = new Event('input', { bubbles: true });
+        inputField.dispatchEvent(event);
+      } else {
+        console.log("ConfessionDropdown: Input field not found in DOM");
+      }
+      
+      // Close the dropdown after setting the value
       setIsOpen(false);
     }, 50);
   };

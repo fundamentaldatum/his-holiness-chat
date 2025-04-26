@@ -19,7 +19,26 @@ export const ChatInput = forwardRef(function ChatInput(
   // Expose methods to parent components
   useImperativeHandle(ref, () => ({
     setValue: (newValue: string) => {
+      console.log("ChatInput.setValue called with:", newValue);
       setValue(newValue);
+      
+      // Use setTimeout to ensure the state update has been processed
+      setTimeout(() => {
+        // Also try to directly update the input field as a fallback
+        const inputField = document.querySelector('input[placeholder="What troubles you, my son..."]');
+        if (inputField) {
+          console.log("ChatInput: Found input field, setting value directly");
+          // Set the value directly
+          (inputField as HTMLInputElement).value = newValue;
+          
+          // Focus the input field
+          (inputField as HTMLInputElement).focus();
+          
+          // Dispatch an input event to ensure React's state is updated
+          const event = new Event('input', { bubbles: true });
+          inputField.dispatchEvent(event);
+        }
+      }, 0);
     },
     submitForm: async () => {
       if (value.trim() !== "") {
@@ -47,7 +66,10 @@ export const ChatInput = forwardRef(function ChatInput(
         className="w-full px-3 xs:px-4 py-2 rounded border bg-white text-black text-sm xs:text-base almendra-font placeholder-gray-400 placeholder:almendra-font placeholder:text-sm xs:placeholder:text-base"
         type="text"
         value={value}
-        onChange={(e) => setValue(e.target.value)}
+        onChange={(e) => {
+          console.log("Input onChange:", e.target.value);
+          setValue(e.target.value);
+        }}
         placeholder="What troubles you, my son..."
         autoComplete="off"
         spellCheck={false}

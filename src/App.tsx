@@ -406,8 +406,34 @@ function ChatRoom() {
   
   // Handle selecting a confession from the dropdown
   const handleSelectConfession = (confession: string) => {
+    console.log("Confession selected:", confession);
+    
+    // Try the ref approach first
     if (chatInputRef.current) {
+      console.log("Using chatInputRef to set value");
       chatInputRef.current.setValue(confession);
+      
+      // Also try to directly update the input field as a fallback
+      setTimeout(() => {
+        // Find the input field in the DOM
+        const inputField = document.querySelector('input[placeholder="What troubles you, my son..."]');
+        if (inputField) {
+          console.log("Found input field, setting value directly");
+          // Set the value directly
+          (inputField as HTMLInputElement).value = confession;
+          
+          // Focus the input field
+          (inputField as HTMLInputElement).focus();
+          
+          // Dispatch an input event to ensure React's state is updated
+          const event = new Event('input', { bubbles: true });
+          inputField.dispatchEvent(event);
+        } else {
+          console.log("Input field not found in DOM");
+        }
+      }, 10);
+    } else {
+      console.log("chatInputRef.current is null");
     }
   };
 
