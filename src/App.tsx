@@ -345,9 +345,8 @@ function ChatRoom() {
     setIsBurning(true);
     setTimeout(() => {
       clearMessages({ userId: userId });
-      // Clear welcome flag so user gets welcome message on next visit
-      clearWelcomeFlag();
-      // Reset welcome attempted flag so welcome message can be sent again
+      // Reset welcome attempted flag so welcome message can be sent again if needed
+      // but only for truly new users (welcomeShown flag in localStorage remains)
       welcomeAttempted.current = false;
       setIsBurning(false);
     }, 1500); // Match the duration of the burning animation
