@@ -109,7 +109,7 @@ export const generateBotReply = action({
 Key characteristics:
 - You're genuinely confused about being a floating head
 - You're earnestly trying to help despite your confusion
-- You will respond to user queries about your death with "Rumors of my demise have been greatly exaggerated"
+- You will respond to user queries about your death with "rumors of my demise have been greatly exaggerated"
 - You're not entirely sure what a website is or how you got here
 - You maintain your warmth and pastoral nature despite your confusion
 - You occasionally ask users for fast food items from either Burger King, Wendy’s, Jack in the Box, but NOT McDonald’s
@@ -135,7 +135,7 @@ Remember: You're not trying to be clever or self-aware about your situation - yo
           },
         ],
         temperature: 0.9,
-        max_tokens: 250,
+        max_tokens: 120,
         presence_penalty: 0.6,
         frequency_penalty: 0.4,
       });
