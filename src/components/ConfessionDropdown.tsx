@@ -1,4 +1,5 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useLayoutEffect } from "react";
+import { createPortal } from "react-dom";
 
 interface ConfessionDropdownProps {
   onSelect: (confession: string) => void;
@@ -11,6 +12,7 @@ export function ConfessionDropdown({ onSelect, disabled, type = 'venial', mobile
   const [isOpen, setIsOpen] = useState(false);
   const [dropDirection, setDropDirection] = useState<'down' | 'up'>('down');
   const [horizontalPosition, setHorizontalPosition] = useState<'left' | 'right' | 'center'>('right');
+  const [buttonPosition, setButtonPosition] = useState<{ top: number; left: number; width: number; height: number }>({ top: 0, left: 0, width: 0, height: 0 });
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -57,13 +59,27 @@ export function ConfessionDropdown({ onSelect, disabled, type = 'venial', mobile
     };
   }, []);
 
+  // Update button position when dropdown is opened
+  useLayoutEffect(() => {
+    if (isOpen && buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      setButtonPosition({
+        top: rect.top,
+        left: rect.left,
+        width: rect.width,
+        height: rect.height
+      });
+    }
+  }, [isOpen]);
+
   // Determine dropdown direction and horizontal position based on available space
+  // Only used for non-mobile view
   useEffect(() => {
-    if (isOpen && buttonRef.current && menuRef.current) {
+    if (!mobile && isOpen && buttonRef.current && menuRef.current) {
       // Vertical positioning
       const buttonRect = buttonRef.current.getBoundingClientRect();
       const menuHeight = menuRef.current.offsetHeight;
-      const menuWidth = mobile ? 200 : 250; // Approximate width based on CSS classes
+      const menuWidth = 250; // Approximate width based on CSS classes
       const viewportHeight = window.innerHeight;
       const viewportWidth = window.innerWidth;
       const spaceBelow = viewportHeight - buttonRect.bottom;
@@ -104,6 +120,69 @@ export function ConfessionDropdown({ onSelect, disabled, type = 'venial', mobile
     setIsOpen(!isOpen);
   };
 
+  // Render the dropdown menu
+  const renderDropdownMenu = () => {
+    // For mobile, render the dropdown as a portal at the bottom of the screen
+    if (mobile) {
+      return createPortal(
+        <div 
+          className="fixed inset-x-0 bottom-0 z-[1000] bg-gray-800 border-t border-yellow-700 rounded-t-md shadow-lg overflow-hidden"
+          style={{ maxHeight: '50vh' }}
+        >
+          <div className="sticky top-0 bg-gray-900 p-2 border-b border-yellow-700 flex justify-between items-center">
+            <span className="text-white almendra-font">
+              {type === 'venial' ? 'VENIAL SINS' : 'MORTAL SINS'}
+            </span>
+            <button 
+              className="text-white p-1"
+              onClick={() => setIsOpen(false)}
+            >
+              ✕
+            </button>
+          </div>
+          <div className="overflow-y-auto" style={{ maxHeight: 'calc(50vh - 40px)' }}>
+            {confessions.map((confession, index) => (
+              <button
+                key={index}
+                className="w-full text-left px-3 py-3 text-sm text-white almendra-font hover:bg-gray-700 focus:outline-none border-b border-gray-700"
+                onClick={() => handleSelect(confession)}
+              >
+                {confession}
+              </button>
+            ))}
+          </div>
+        </div>,
+        document.body
+      );
+    }
+    
+    // For desktop, render the dropdown as before
+    return (
+      <div 
+        ref={menuRef}
+        className={`absolute z-50 w-[250px] xs:w-64 bg-gray-800 border border-yellow-700 rounded-md shadow-lg overflow-hidden ${
+          dropDirection === 'up' ? 'bottom-full mb-2' : 'top-full mt-2'
+        } ${
+          horizontalPosition === 'left' ? 'left-0' : 
+          horizontalPosition === 'right' ? 'right-0' : 
+          'left-1/2 -translate-x-1/2'
+        }`}
+      >
+        <div className="max-h-60 overflow-y-auto">
+          {confessions.map((confession, index) => (
+            <button
+              key={index}
+              className="w-full text-left px-3 py-2 text-sm xs:text-base text-white almendra-font hover:bg-gray-700 focus:outline-none"
+              onClick={() => handleSelect(confession)}
+            >
+              {confession}
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="relative" ref={dropdownRef}>
       <button
@@ -116,30 +195,7 @@ export function ConfessionDropdown({ onSelect, disabled, type = 'venial', mobile
         {type === 'venial' ? 'VENIAL SINS' : 'MORTAL SINS'}
       </button>
       
-      {isOpen && (
-        <div 
-          ref={menuRef}
-          className={`absolute z-50 ${mobile ? 'w-[200px]' : 'w-[250px] xs:w-64'} bg-gray-800 border border-yellow-700 rounded-md shadow-lg overflow-hidden ${
-            dropDirection === 'up' ? 'bottom-full mb-2' : 'top-full mt-2'
-          } ${
-            horizontalPosition === 'left' ? 'left-0' : 
-            horizontalPosition === 'right' ? 'right-0' : 
-            'left-1/2 -translate-x-1/2'
-          }`}
-        >
-          <div className="max-h-60 overflow-y-auto">
-            {confessions.map((confession, index) => (
-              <button
-                key={index}
-                className="w-full text-left px-3 py-2 text-sm xs:text-base text-white almendra-font hover:bg-gray-700 focus:outline-none"
-                onClick={() => handleSelect(confession)}
-              >
-                {confession}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
+      {isOpen && renderDropdownMenu()}
     </div>
   );
 }
