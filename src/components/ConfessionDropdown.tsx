@@ -49,7 +49,7 @@ export function ConfessionDropdown({ onSelect, disabled }: ConfessionDropdownPro
         className="almendra-font px-4 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700"
         disabled={disabled}
       >
-        COMMON SINS
+        VENIAL SINS
       </button>
       
       {isOpen && (
