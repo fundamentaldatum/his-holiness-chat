@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, Suspense, ReactNode, useMemo } from "react";
+import React, { useEffect, useRef, useState, Suspense, ReactNode, useMemo, useCallback } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../convex/_generated/api";
 import { Canvas, useFrame } from "@react-three/fiber";
@@ -94,22 +94,101 @@ class ModelErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBounda
   }
 }
 
-// The actual model component with oscillating rotation
+// Reset button component that appears when the model is not in default position
+function ResetButton({ onClick }: { onClick: () => void }) {
+  return (
+    <Html position={[0, -2, 0]} center>
+      <button
+        onClick={onClick}
+        className="bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-1 px-3 rounded-full shadow-lg almendra-font text-sm"
+        style={{
+          transition: "all 0.3s ease",
+          border: "2px solid #fff",
+          boxShadow: "0 0 10px rgba(255, 215, 0, 0.7)",
+          whiteSpace: "nowrap",
+        }}
+      >
+        are you even listening?
+      </button>
+    </Html>
+  );
+}
+
+// The model component with oscillating rotation and reset button functionality
 function Model() {
   const { scene } = useGLTF('/pope_francis.glb');
   const modelRef = useRef<THREE.Group | null>(null);
+  const controlsRef = useRef<any>(null);
+  const clockRef = useRef<THREE.Clock>(new THREE.Clock());
+  const [isDefaultView, setIsDefaultView] = useState(true);
+  
+  // Function to handle camera movement
+  const handleCameraChange = useCallback(() => {
+    if (controlsRef.current) {
+      // Check if camera has moved from default position
+      const azimuthalAngle = controlsRef.current.getAzimuthalAngle();
+      const polarAngle = controlsRef.current.getPolarAngle();
+      
+      // If the camera has moved significantly from the default view
+      const isDefault = Math.abs(azimuthalAngle) < 0.1 && Math.abs(polarAngle - Math.PI / 2) < 0.1;
+      setIsDefaultView(isDefault);
+    }
+  }, []);
+  
+  // Function to reset the camera to default position
+  const resetCamera = useCallback(() => {
+    if (controlsRef.current) {
+      // Reset the camera position
+      controlsRef.current.reset();
+      
+      // Ensure the target is at the origin
+      controlsRef.current.target.set(0, 0, 0);
+      
+      // Update controls
+      controlsRef.current.update();
+      
+      // Mark as default view
+      setIsDefaultView(true);
+    }
+  }, []);
   
   // Use useFrame to create an oscillating rotation
-  useFrame(({ clock }) => {
+  useFrame(() => {
     if (modelRef.current) {
-      // Use sine function to create oscillating motion
-      // Math.sin produces values between -1 and 1
-      // Multiply by 0.5 to limit rotation range to approximately 30 degrees each way
-      modelRef.current.rotation.y = Math.sin(clock.getElapsedTime() * 0.5) * 0.5;
+      // Apply oscillating rotation to the model
+      modelRef.current.rotation.y = Math.sin(clockRef.current.getElapsedTime() * 0.5) * 0.5;
     }
   });
   
-  return <primitive ref={modelRef} object={scene} scale={2.5} />;
+  return (
+    <>
+      <primitive ref={modelRef} object={scene} scale={2.5} />
+      
+      {/* Show reset button only when not in default view */}
+      {!isDefaultView && <ResetButton onClick={resetCamera} />}
+      
+      <OrbitControls
+        ref={controlsRef}
+        makeDefault
+        enableZoom={false}
+        enablePan={false}
+        minDistance={5}
+        maxDistance={5}
+        minPolarAngle={Math.PI / 2}
+        maxPolarAngle={Math.PI / 2}
+        mouseButtons={{
+          LEFT: THREE.MOUSE.ROTATE,
+          MIDDLE: undefined,
+          RIGHT: undefined,
+        }}
+        touches={{
+          ONE: THREE.TOUCH.ROTATE,
+          TWO: undefined,
+        }}
+        onChange={handleCameraChange}
+      />
+    </>
+  );
 }
 
 function AbsolveModal({
@@ -221,24 +300,6 @@ function ChatRoom() {
                     <Model />
                   </ModelErrorBoundary>
                 </Suspense>
-                <OrbitControls
-                  makeDefault
-                  enableZoom={false}
-                  enablePan={false}
-                  minDistance={5}
-                  maxDistance={5}
-                  minPolarAngle={Math.PI / 2}
-                  maxPolarAngle={Math.PI / 2}
-                  mouseButtons={{
-                    LEFT: THREE.MOUSE.ROTATE,
-                    MIDDLE: undefined,
-                    RIGHT: undefined,
-                  }}
-                  touches={{
-                    ONE: THREE.TOUCH.ROTATE,
-                    TWO: undefined,
-                  }}
-                />
               </Canvas>
               <div className="text-center -mt-8 relative z-10">
                 <h2 className="text-lg xs:text-xl sm:text-2xl almendra-font text-indigo-300">🕊️Pope Francis🕊️</h2>
