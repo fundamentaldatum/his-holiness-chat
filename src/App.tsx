@@ -447,10 +447,16 @@ function ChatRoom() {
           {/* Chat Section */}
           <div className="w-full md:w-1/2 flex flex-col flex-1 min-h-0">
             <div className="flex flex-col flex-1 min-h-0 relative">
-              {/* Chat Messages Container with padding for fixed action bar */}
+              {/* Chat Messages Container with standardized dimensions for mobile */}
               <div
                 ref={chatContainerRef}
-                className="flex-1 overflow-y-auto p-2 xs:p-3 sm:p-4 rounded chat-card border min-h-[200px] max-h-[40vh] xs:max-h-[50vh] sm:max-h-[60vh] md:max-h-[70vh] lg:max-h-[80vh] xl:max-h-[90vh] md:min-h-[28rem] lg:min-h-[32rem] relative pb-[120px] sm:pb-[100px] md:pb-4 chat-container-with-padding"
+                className="flex-1 overflow-y-auto p-2 xs:p-3 sm:p-4 rounded chat-card border 
+                  min-h-[300px] xs:min-h-[350px] sm:min-h-[400px] md:min-h-[28rem] lg:min-h-[32rem]
+                  h-[60vh] xs:h-[60vh] sm:h-[60vh] md:h-[70vh] lg:h-[80vh] xl:h-[90vh]
+                  relative pb-[120px] sm:pb-[100px] md:pb-4 chat-container-with-padding"
+                style={{
+                  aspectRatio: window.innerWidth < 768 ? "1/1.2" : "auto",
+                }}
               >
                 {/* 3D Fire effect overlays */}
                 {isBurning && <FireOverlay3D />}
@@ -506,7 +512,7 @@ function ChatRoom() {
                 )}
               </div>
               
-              {/* Fixed Action Bar */}
+              {/* Fixed Action Bar - improved positioning for mobile */}
               <div className="fixed bottom-0 left-0 right-0 md:static md:bottom-auto md:left-auto md:right-auto z-40 bg-gray-900/95 border-t border-gray-700 md:border-0 md:shadow-none fixed-action-bar">
                 <div className="container mx-auto px-2 sm:px-6 md:px-0 max-w-5xl">
                   <div className="w-full md:w-1/2 ml-auto">
@@ -553,6 +559,41 @@ function ChatRoom() {
           10% { opacity: 1; }
           90% { opacity: 1; }
           100% { opacity: 0; }
+        }
+        
+        /* Ensure consistent chat container dimensions */
+        .chat-container-with-padding {
+          position: relative;
+          overflow: hidden;
+        }
+        
+        /* Ensure fire effect is properly positioned on mobile */
+        @media (max-width: 767px) {
+          .chat-card {
+            position: relative;
+            overflow: hidden;
+          }
+          
+          .is-burning {
+            position: relative;
+            z-index: 1;
+          }
+          
+          /* Ensure fixed action bar is properly positioned */
+          .fixed-action-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: rgba(17, 24, 39, 0.95);
+            border-top: 1px solid #4B5563;
+            padding-bottom: env(safe-area-inset-bottom, 0);
+          }
+          
+          /* Adjust scroll-to-bottom button position */
+          .scroll-to-bottom-button {
+            bottom: 130px !important;
+          }
         }
       `}</style>
     </div>

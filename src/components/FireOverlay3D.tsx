@@ -379,14 +379,18 @@ function ResponsiveCamera() {
   const { size, camera } = useThree();
   
   useEffect(() => {
-    // Adjust zoom based on screen width
+    // Adjust zoom based on screen width - enhanced for better mobile coverage
     const calculateZoom = () => {
-      if (size.width < 480) {
-        return 80; // Smaller zoom for mobile
+      if (size.width < 360) {
+        return 70; // Extra small mobile devices
+      } else if (size.width < 480) {
+        return 80; // Small mobile devices
+      } else if (size.width < 640) {
+        return 90; // Medium mobile devices
       } else if (size.width < 768) {
-        return 100; // Medium zoom for tablets
+        return 100; // Tablets
       } else {
-        return 120; // Default zoom for desktop
+        return 120; // Desktop
       }
     };
     
@@ -402,37 +406,77 @@ function ResponsiveCamera() {
 
 // 3D fire overlay for burning animation
 export function FireOverlay3D() {
-  // State to track screen size
-  const [isMobile, setIsMobile] = useState(false);
+  // Enhanced state to track screen size more precisely
+  const [screenSize, setScreenSize] = useState({
+    isMobile: false,
+    isSmallMobile: false,
+    width: 0,
+    height: 0
+  });
   
-  // Detect mobile screen size
+  // Detect screen size with more granularity
   useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
+    const checkScreenSize = () => {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      setScreenSize({
+        isMobile: width < 768,
+        isSmallMobile: width < 480,
+        width,
+        height
+      });
     };
     
     // Check initially
-    checkMobile();
+    checkScreenSize();
     
     // Add resize listener
-    window.addEventListener('resize', checkMobile);
+    window.addEventListener('resize', checkScreenSize);
     
     // Cleanup
-    return () => window.removeEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkScreenSize);
   }, []);
   
-  // Adjust particle counts based on screen size
-  const fireParticleCount = isMobile ? 120 : 220;
-  const smokeParticleCount = isMobile ? 25 : 50;
+  // Adjust particle counts based on screen size with more granularity
+  const fireParticleCount = screenSize.isSmallMobile ? 80 : (screenSize.isMobile ? 120 : 220);
+  const smokeParticleCount = screenSize.isSmallMobile ? 15 : (screenSize.isMobile ? 25 : 50);
   
-  // The overlay is sized to cover the chat area (aspect ratio ~1:1.2)
+  // Calculate optimal container style based on screen size
+  const containerStyle = useMemo(() => {
+    // Base styles
+    const style: React.CSSProperties = {
+      width: "100%",
+      height: "100%",
+      background: "transparent",
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0
+    };
+    
+    // Add specific adjustments for mobile
+    if (screenSize.isMobile) {
+      // Ensure the fire effect covers the entire chat area on mobile
+      style.minHeight = screenSize.isSmallMobile ? "250px" : "300px";
+      
+      // Add a slight scale adjustment for better visibility on small screens
+      if (screenSize.isSmallMobile) {
+        style.transform = "scale(1.1)";
+      }
+    }
+    
+    return style;
+  }, [screenSize]);
+  
+  // The overlay is sized to cover the chat area with improved positioning
   return (
-    <div className="absolute inset-0 pointer-events-none z-50 flex items-center justify-center">
-      <div className="w-full h-full min-h-[200px]">
+    <div className="absolute inset-0 pointer-events-none z-50 flex items-center justify-center overflow-hidden">
+      <div className="w-full h-full min-h-[200px] relative">
         <Canvas
           orthographic
           camera={{ position: [0, 0, 10] }}
-          style={{ width: "100%", height: "100%", background: "transparent" }}
+          style={containerStyle}
         >
           <ResponsiveCamera />
           <ambientLight intensity={0.3} />
