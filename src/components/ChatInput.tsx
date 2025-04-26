@@ -1,24 +1,29 @@
-import { useState } from "react";
+import { useState, FormEvent } from "react";
 
 export function ChatInput({
   onSubmit,
+  onConfess,
 }: {
   onSubmit: (body: string) => Promise<void>;
+  onConfess?: () => void;
 }) {
   const [value, setValue] = useState("");
 
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    if (value.trim() === "") return;
+    await onSubmit(value);
+    setValue("");
+    if (onConfess) onConfess();
+  };
+
   return (
     <form
-      className="flex w-full"
-      onSubmit={async (e) => {
-        e.preventDefault();
-        if (value.trim() === "") return;
-        await onSubmit(value);
-        setValue("");
-      }}
+      className="w-full"
+      onSubmit={handleSubmit}
     >
       <input
-        className="flex-1 px-4 py-2 rounded border bg-white text-black almendra-font placeholder-gray-400 placeholder:almendra-font"
+        className="w-full px-4 py-2 rounded border bg-white text-black almendra-font placeholder-gray-400 placeholder:almendra-font"
         type="text"
         value={value}
         onChange={(e) => setValue(e.target.value)}
@@ -27,12 +32,6 @@ export function ChatInput({
         spellCheck={false}
         maxLength={300}
       />
-      <button
-        type="submit"
-        className="almendra-font ml-2 px-4 py-2 bg-indigo-700 text-white rounded hover:bg-indigo-800"
-      >
-        CONFESS
-      </button>
     </form>
   );
 }

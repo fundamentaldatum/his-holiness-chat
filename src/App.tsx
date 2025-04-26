@@ -283,9 +283,20 @@ function ChatRoom() {
                   ))
                 )}
               </div>
-              {/* Input and Buttons */}
-              <div className="flex gap-2 w-full pb-2 xs:pb-3 sm:pb-4">
+              {/* Input Field */}
+              <div className="w-full mb-2">
                 <ChatInput onSubmit={handleSendMessage} />
+              </div>
+              
+              {/* Buttons */}
+              <div className="flex justify-center gap-4 w-full pb-2 xs:pb-3 sm:pb-4">
+                <button
+                  onClick={() => document.querySelector('form')?.dispatchEvent(new Event('submit', { cancelable: true }))}
+                  className="almendra-font px-4 py-2 bg-indigo-700 text-white rounded hover:bg-indigo-800"
+                  disabled={isBurning}
+                >
+                  CONFESS
+                </button>
                 <button
                   onClick={handleClear}
                   className="almendra-font px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
