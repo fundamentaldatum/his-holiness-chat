@@ -10,6 +10,7 @@ interface ConfessionDropdownProps {
 export function ConfessionDropdown({ onSelect, disabled, type = 'venial', mobile = false }: ConfessionDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [dropDirection, setDropDirection] = useState<'down' | 'up'>('down');
+  const [horizontalPosition, setHorizontalPosition] = useState<'left' | 'right' | 'center'>('right');
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -56,12 +57,15 @@ export function ConfessionDropdown({ onSelect, disabled, type = 'venial', mobile
     };
   }, []);
 
-  // Determine dropdown direction based on available space
+  // Determine dropdown direction and horizontal position based on available space
   useEffect(() => {
     if (isOpen && buttonRef.current && menuRef.current) {
+      // Vertical positioning
       const buttonRect = buttonRef.current.getBoundingClientRect();
       const menuHeight = menuRef.current.offsetHeight;
+      const menuWidth = mobile ? 200 : 250; // Approximate width based on CSS classes
       const viewportHeight = window.innerHeight;
+      const viewportWidth = window.innerWidth;
       const spaceBelow = viewportHeight - buttonRect.bottom;
       
       // If there's not enough space below, position the dropdown above the button
@@ -70,8 +74,26 @@ export function ConfessionDropdown({ onSelect, disabled, type = 'venial', mobile
       } else {
         setDropDirection('down');
       }
+      
+      // Horizontal positioning
+      const buttonCenterX = buttonRect.left + (buttonRect.width / 2);
+      const spaceToRight = viewportWidth - buttonRect.right;
+      const spaceToLeft = buttonRect.left;
+      
+      // If menu would extend beyond right edge
+      if (spaceToRight < menuWidth / 2) {
+        setHorizontalPosition('right');
+      } 
+      // If menu would extend beyond left edge
+      else if (spaceToLeft < menuWidth / 2) {
+        setHorizontalPosition('left');
+      } 
+      // Center the menu if there's enough space on both sides
+      else {
+        setHorizontalPosition('center');
+      }
     }
-  }, [isOpen]);
+  }, [isOpen, mobile]);
 
   const handleSelect = (confession: string) => {
     onSelect(confession);
@@ -99,7 +121,11 @@ export function ConfessionDropdown({ onSelect, disabled, type = 'venial', mobile
           ref={menuRef}
           className={`absolute z-50 ${mobile ? 'w-[200px]' : 'w-[250px] xs:w-64'} bg-gray-800 border border-yellow-700 rounded-md shadow-lg overflow-hidden ${
             dropDirection === 'up' ? 'bottom-full mb-2' : 'top-full mt-2'
-          } right-0 xs:right-auto`}
+          } ${
+            horizontalPosition === 'left' ? 'left-0' : 
+            horizontalPosition === 'right' ? 'right-0' : 
+            'left-1/2 -translate-x-1/2'
+          }`}
         >
           <div className="max-h-60 overflow-y-auto">
             {confessions.map((confession, index) => (
