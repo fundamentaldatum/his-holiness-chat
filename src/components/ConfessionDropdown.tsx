@@ -112,12 +112,28 @@ export function ConfessionDropdown({ onSelect, disabled, type = 'venial', mobile
   }, [isOpen, mobile]);
 
   const handleSelect = (confession: string) => {
+    // Call onSelect first to ensure the input field is updated
     onSelect(confession);
-    setIsOpen(false);
+    
+    // Add a small delay before closing the dropdown to ensure the selection is processed
+    setTimeout(() => {
+      setIsOpen(false);
+    }, 50);
   };
 
   const toggleDropdown = () => {
     setIsOpen(!isOpen);
+  };
+
+  // Handle mobile selection separately to ensure it works with the portal
+  const handleMobileSelect = (confession: string) => {
+    // Ensure the onSelect callback is called with the selected confession
+    onSelect(confession);
+    
+    // Close the dropdown after a small delay
+    setTimeout(() => {
+      setIsOpen(false);
+    }, 50);
   };
 
   // Render the dropdown menu
@@ -145,7 +161,7 @@ export function ConfessionDropdown({ onSelect, disabled, type = 'venial', mobile
               <button
                 key={index}
                 className="w-full text-left px-3 py-3 text-sm text-white almendra-font hover:bg-gray-700 focus:outline-none border-b border-gray-700"
-                onClick={() => handleSelect(confession)}
+                onClick={() => handleMobileSelect(confession)}
               >
                 {confession}
               </button>
