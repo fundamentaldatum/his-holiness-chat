@@ -349,7 +349,7 @@ function ChatRoom() {
       // but only for truly new users (welcomeShown flag in localStorage remains)
       welcomeAttempted.current = false;
       setIsBurning(false);
-    }, 1500); // Match the duration of the burning animation
+    }, 2500); // Increased duration for better visibility on mobile
   };
 
   const handleCancelAbsolve = () => {
@@ -410,8 +410,7 @@ function ChatRoom() {
             <div className="flex flex-col flex-1 min-h-0">
               <div
                 ref={chatContainerRef}
-                className="flex-1 overflow-y-auto mb-2 p-2 xs:p-3 sm:p-4 rounded chat-card border min-h-[120px] max-h-[40vh] xs:max-h-[50vh] sm:max-h-[60vh] md:max-h-[70vh] lg:max-h-[80vh] xl:max-h-[90vh] md:min-h-[28rem] lg:min-h-[32rem] relative"
-                style={{ minHeight: 120 }}
+                className="flex-1 overflow-y-auto mb-2 p-2 xs:p-3 sm:p-4 rounded chat-card border min-h-[200px] max-h-[40vh] xs:max-h-[50vh] sm:max-h-[60vh] md:max-h-[70vh] lg:max-h-[80vh] xl:max-h-[90vh] md:min-h-[28rem] lg:min-h-[32rem] relative"
               >
                 {/* 3D Fire effect overlays */}
                 {isBurning && <FireOverlay3D />}
@@ -420,7 +419,7 @@ function ChatRoom() {
                   <div
                     className="absolute inset-0 flex items-center justify-center z-50 pointer-events-none"
                     style={{
-                      animation: "fadeInOut 1.5s linear",
+                      animation: "fadeInOut 2.5s linear",
                     }}
                   >
                     <span

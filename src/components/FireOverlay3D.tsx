@@ -1,5 +1,5 @@
-import { Canvas, useFrame } from "@react-three/fiber";
-import { useRef, useMemo } from "react";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { useRef, useMemo, useState, useEffect } from "react";
 import * as THREE from "three";
 
 // Enhanced fire color palette, from base to tip
@@ -374,22 +374,74 @@ function FireLight() {
   );
 }
 
+// Responsive camera component that adjusts zoom based on screen size
+function ResponsiveCamera() {
+  const { size, camera } = useThree();
+  
+  useEffect(() => {
+    // Adjust zoom based on screen width
+    const calculateZoom = () => {
+      if (size.width < 480) {
+        return 80; // Smaller zoom for mobile
+      } else if (size.width < 768) {
+        return 100; // Medium zoom for tablets
+      } else {
+        return 120; // Default zoom for desktop
+      }
+    };
+    
+    // Apply zoom to the orthographic camera
+    if (camera instanceof THREE.OrthographicCamera) {
+      camera.zoom = calculateZoom();
+      camera.updateProjectionMatrix();
+    }
+  }, [size.width, camera]);
+  
+  return null; // No need to render anything, we're modifying the default camera
+}
+
 // 3D fire overlay for burning animation
 export function FireOverlay3D() {
+  // State to track screen size
+  const [isMobile, setIsMobile] = useState(false);
+  
+  // Detect mobile screen size
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    // Check initially
+    checkMobile();
+    
+    // Add resize listener
+    window.addEventListener('resize', checkMobile);
+    
+    // Cleanup
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+  
+  // Adjust particle counts based on screen size
+  const fireParticleCount = isMobile ? 120 : 220;
+  const smokeParticleCount = isMobile ? 25 : 50;
+  
   // The overlay is sized to cover the chat area (aspect ratio ~1:1.2)
   return (
-    <div className="absolute inset-0 pointer-events-none z-40">
-      <Canvas
-        orthographic
-        camera={{ zoom: 120, position: [0, 0, 10] }}
-        style={{ width: "100%", height: "100%", background: "transparent" }}
-      >
-        <ambientLight intensity={0.3} />
-        <FireLight />
-        <FireParticles count={220} />
-        <SmokeParticles count={50} />
-        <FireBase />
-      </Canvas>
+    <div className="absolute inset-0 pointer-events-none z-50 flex items-center justify-center">
+      <div className="w-full h-full min-h-[200px]">
+        <Canvas
+          orthographic
+          camera={{ position: [0, 0, 10] }}
+          style={{ width: "100%", height: "100%", background: "transparent" }}
+        >
+          <ResponsiveCamera />
+          <ambientLight intensity={0.3} />
+          <FireLight />
+          <FireParticles count={fireParticleCount} />
+          <SmokeParticles count={smokeParticleCount} />
+          <FireBase />
+        </Canvas>
+      </div>
     </div>
   );
 }

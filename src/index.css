@@ -94,7 +94,7 @@
     #e65100 90%,
     transparent 100%
   );
-  animation: burnFlamesUp 1.5s cubic-bezier(0.4,0,0.2,1) forwards;
+  animation: burnFlamesUp 2.5s cubic-bezier(0.4,0,0.2,1) forwards;
   filter: blur(1.2px) brightness(1.1);
   mix-blend-mode: lighten;
 }
@@ -110,7 +110,7 @@
   background: radial-gradient(ellipse at center, #ffd700 0%, #ff9800 60%, transparent 100%);
   opacity: 0.7;
   filter: blur(8px);
-  animation: burnGlowFlicker 1.5s linear forwards;
+  animation: burnGlowFlicker 2.5s linear forwards;
 }
 
 @keyframes burnGlowFlicker {
@@ -136,7 +136,7 @@
     repeating-radial-gradient(circle at 80% 95%, #ffd180 0px, #ffd180 0.7px, transparent 1.2px 20px),
     repeating-radial-gradient(circle at 50% 80%, #ff9800 0px, #ff9800 0.7px, transparent 1.2px 20px);
   opacity: 0.15;
-  animation: embersFlicker 1.5s linear forwards;
+  animation: embersFlicker 2.5s linear forwards;
   mix-blend-mode: lighten;
 }
 
