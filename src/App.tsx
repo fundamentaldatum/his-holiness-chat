@@ -425,10 +425,10 @@ function ChatRoom() {
         </h1>
       </header>
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col items-center justify-center w-full px-2 sm:px-6 md:px-12 lg:px-24 xl:px-32 py-4 md:py-10">
-        <div className="w-full max-w-5xl flex flex-col md:flex-row md:gap-12 gap-6 items-center md:items-stretch">
+      <main className="flex-1 flex flex-col items-center justify-center w-full px-2 sm:px-6 md:px-12 lg:px-24 xl:px-32 py-4">
+        <div className="w-full max-w-5xl flex flex-row gap-6 sm:gap-8 md:gap-12 items-stretch">
           {/* 3D Model */}
-          <div className="w-full md:w-1/2 flex flex-col items-center justify-center md:justify-start md:pt-6">
+          <div className="w-1/2 flex flex-col items-center justify-start pt-6">
             <div className="w-full h-80 xs:h-88 sm:h-96 md:h-[28rem] lg:h-[32rem] relative">
               <Canvas camera={{ position: [0, 0, 5] }}>
                 <ambientLight intensity={0.5} />
@@ -445,18 +445,15 @@ function ChatRoom() {
             </div>
           </div>
           {/* Chat Section */}
-          <div className="w-full md:w-1/2 flex flex-col flex-1 min-h-0">
+          <div className="w-1/2 flex flex-col flex-1 min-h-0">
             <div className="flex flex-col flex-1 min-h-0 relative">
-              {/* Chat Messages Container with standardized dimensions for mobile */}
+              {/* Chat Messages Container with consistent dimensions for all devices */}
               <div
                 ref={chatContainerRef}
                 className="flex-1 overflow-y-auto p-2 xs:p-3 sm:p-4 rounded chat-card border 
-                  min-h-[300px] xs:min-h-[350px] sm:min-h-[400px] md:min-h-[28rem] lg:min-h-[32rem]
-                  h-[60vh] xs:h-[60vh] sm:h-[60vh] md:h-[70vh] lg:h-[80vh] xl:h-[90vh]
-                  relative pb-[120px] sm:pb-[100px] md:pb-4 chat-container-with-padding"
-                style={{
-                  aspectRatio: window.innerWidth < 768 ? "1/1.2" : "auto",
-                }}
+                  min-h-[28rem] 
+                  h-[70vh]
+                  relative pb-4 chat-container-with-padding"
               >
                 {/* 3D Fire effect overlays */}
                 {isBurning && <FireOverlay3D />}
@@ -502,7 +499,7 @@ function ChatRoom() {
                 {isScrolledUp && !isBurning && (
                   <button
                     onClick={scrollToBottom}
-                    className="fixed bottom-[130px] right-4 z-40 rounded-full bg-yellow-600 p-2 shadow-lg text-white scroll-to-bottom-button"
+                    className="fixed bottom-5 right-5 z-40 rounded-full bg-yellow-600 p-2 shadow-lg text-white scroll-to-bottom-button"
                     aria-label="Scroll to bottom"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -512,10 +509,10 @@ function ChatRoom() {
                 )}
               </div>
               
-              {/* Fixed Action Bar - improved positioning for mobile */}
-              <div className="fixed bottom-0 left-0 right-0 md:static md:bottom-auto md:left-auto md:right-auto z-40 bg-gray-900/95 border-t border-gray-700 md:border-0 md:shadow-none fixed-action-bar">
-                <div className="container mx-auto px-2 sm:px-6 md:px-0 max-w-5xl">
-                  <div className="w-full md:w-1/2 ml-auto">
+              {/* Static Action Bar for all devices */}
+              <div className="static z-40 bg-gray-900/95 border-0 shadow-none">
+                <div className="container mx-auto px-0 max-w-5xl">
+                  <div className="w-full ml-auto">
                     {/* Input Field */}
                     <div className="w-full pt-2 px-2">
                       <ChatInput ref={chatInputRef} onSubmit={handleSendMessage} />
@@ -568,33 +565,15 @@ function ChatRoom() {
           overflow: hidden;
         }
         
-        /* Ensure fire effect is properly positioned on mobile */
-        @media (max-width: 767px) {
-          .chat-card {
-            position: relative;
-            overflow: hidden;
-          }
-          
-          .is-burning {
-            position: relative;
-            z-index: 1;
-          }
-          
-          /* Ensure fixed action bar is properly positioned */
-          .fixed-action-bar {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background-color: rgba(17, 24, 39, 0.95);
-            border-top: 1px solid #4B5563;
-            padding-bottom: env(safe-area-inset-bottom, 0);
-          }
-          
-          /* Adjust scroll-to-bottom button position */
-          .scroll-to-bottom-button {
-            bottom: 130px !important;
-          }
+        /* Ensure fire effect is properly positioned */
+        .chat-card {
+          position: relative;
+          overflow: hidden;
+        }
+        
+        .is-burning {
+          position: relative;
+          z-index: 1;
         }
       `}</style>
     </div>
