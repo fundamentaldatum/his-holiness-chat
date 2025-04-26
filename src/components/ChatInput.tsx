@@ -2,7 +2,7 @@ import { useState, FormEvent, forwardRef, useImperativeHandle, Ref } from "react
 
 export interface ChatInputRef {
   setValue: (value: string) => void;
-  submitForm: () => void;
+  submitForm: () => Promise<void>;
 }
 
 interface ChatInputProps {
@@ -16,10 +16,17 @@ export const ChatInput = forwardRef(function ChatInput(
 ) {
   const [value, setValue] = useState("");
 
-  // Expose setValue method to parent components
+  // Expose methods to parent components
   useImperativeHandle(ref, () => ({
     setValue: (newValue: string) => {
       setValue(newValue);
+    },
+    submitForm: async () => {
+      if (value.trim() !== "") {
+        await onSubmit(value);
+        setValue("");
+        if (onConfess) onConfess();
+      }
     }
   }));
 

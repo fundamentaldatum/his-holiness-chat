@@ -412,7 +412,13 @@ function ChatRoom() {
               {/* Buttons */}
               <div className="flex justify-center gap-4 w-full pb-2 xs:pb-3 sm:pb-4">
                 <button
-                  onClick={() => document.querySelector('form')?.dispatchEvent(new Event('submit', { cancelable: true }))}
+                  onClick={() => {
+                    if (chatInputRef.current) {
+                      chatInputRef.current.submitForm().catch(error => {
+                        console.error("Error submitting form:", error);
+                      });
+                    }
+                  }}
                   className="almendra-font px-4 py-2 bg-indigo-700 text-white rounded hover:bg-indigo-800"
                   disabled={isBurning}
                 >
