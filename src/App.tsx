@@ -499,7 +499,7 @@ function ChatRoom() {
                 {isScrolledUp && !isBurning && (
                   <button
                     onClick={scrollToBottom}
-                    className="fixed bottom-5 right-5 z-40 rounded-full bg-yellow-600 p-2 shadow-lg text-white scroll-to-bottom-button"
+                    className="fixed bottom-20 sm:bottom-5 right-5 z-40 rounded-full bg-yellow-600 p-2 shadow-lg text-white scroll-to-bottom-button"
                     aria-label="Scroll to bottom"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -509,8 +509,8 @@ function ChatRoom() {
                 )}
               </div>
               
-              {/* Static Action Bar for all devices */}
-              <div className="static z-40 bg-gray-900/95 border-0 shadow-none">
+              {/* Input and Buttons - Desktop Layout */}
+              <div className="static z-40 bg-gray-900/95 border-0 shadow-none hidden sm:block">
                 <div className="container mx-auto px-0 max-w-5xl">
                   <div className="w-full ml-auto">
                     {/* Input Field */}
@@ -547,6 +547,40 @@ function ChatRoom() {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+        
+        {/* Mobile-specific full-width input and buttons */}
+        <div className="w-full sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-gray-900/95 border-t border-gray-800 pb-safe">
+          {/* Input Field - Full Width */}
+          <div className="w-full px-3 pt-3">
+            <ChatInput ref={chatInputRef} onSubmit={handleSendMessage} />
+          </div>
+          
+          {/* Buttons - Single Row */}
+          <div className="flex justify-between px-3 py-3 overflow-x-auto no-scrollbar">
+            <button
+              onClick={() => {
+                if (chatInputRef.current) {
+                  chatInputRef.current.submitForm().catch(error => {
+                    console.error("Error submitting form:", error);
+                  });
+                }
+              }}
+              className="almendra-font text-xs whitespace-nowrap px-2 py-2 bg-indigo-700 text-white rounded hover:bg-indigo-800 flex-1 mx-1"
+              disabled={isBurning}
+            >
+              CONFESS
+            </button>
+            <ConfessionDropdown onSelect={handleSelectConfession} disabled={isBurning} type="venial" mobile={true} />
+            <ConfessionDropdown onSelect={handleSelectConfession} disabled={isBurning} type="mortal" mobile={true} />
+            <button
+              onClick={handleClear}
+              className="almendra-font text-xs whitespace-nowrap px-2 py-2 bg-green-600 text-white rounded hover:bg-green-700 flex-1 mx-1"
+              disabled={isBurning}
+            >
+              ABSOLVE
+            </button>
           </div>
         </div>
       </main>

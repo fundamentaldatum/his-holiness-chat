@@ -4,9 +4,10 @@ interface ConfessionDropdownProps {
   onSelect: (confession: string) => void;
   disabled: boolean;
   type?: 'venial' | 'mortal';
+  mobile?: boolean;
 }
 
-export function ConfessionDropdown({ onSelect, disabled, type = 'venial' }: ConfessionDropdownProps) {
+export function ConfessionDropdown({ onSelect, disabled, type = 'venial', mobile = false }: ConfessionDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [dropDirection, setDropDirection] = useState<'down' | 'up'>('down');
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -87,7 +88,7 @@ export function ConfessionDropdown({ onSelect, disabled, type = 'venial' }: Conf
         ref={buttonRef}
         type="button"
         onClick={toggleDropdown}
-        className={`almendra-font text-sm xs:text-base px-3 xs:px-4 py-2 ${type === 'venial' ? 'bg-yellow-600 hover:bg-yellow-700' : 'bg-red-700 hover:bg-red-800'} text-white rounded`}
+        className={`almendra-font ${mobile ? 'text-xs whitespace-nowrap px-2 py-2 flex-1 mx-1' : 'text-sm xs:text-base px-3 xs:px-4 py-2'} ${type === 'venial' ? 'bg-yellow-600 hover:bg-yellow-700' : 'bg-red-700 hover:bg-red-800'} text-white rounded`}
         disabled={disabled}
       >
         {type === 'venial' ? 'VENIAL SINS' : 'MORTAL SINS'}
@@ -96,7 +97,7 @@ export function ConfessionDropdown({ onSelect, disabled, type = 'venial' }: Conf
       {isOpen && (
         <div 
           ref={menuRef}
-          className={`absolute z-50 w-[250px] xs:w-64 bg-gray-800 border border-yellow-700 rounded-md shadow-lg overflow-hidden ${
+          className={`absolute z-50 ${mobile ? 'w-[200px]' : 'w-[250px] xs:w-64'} bg-gray-800 border border-yellow-700 rounded-md shadow-lg overflow-hidden ${
             dropDirection === 'up' ? 'bottom-full mb-2' : 'top-full mt-2'
           } right-0 xs:right-auto`}
         >
