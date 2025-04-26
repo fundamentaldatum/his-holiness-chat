@@ -44,7 +44,7 @@ function ModelLoader() {
   return (
     <Html center>
       <div className="text-white text-center">
-        <div className="mb-2 almendra-font">Loading His Holiness...</div>
+        <div className="mb-2 almendra-font">memento mori</div>
         <div className="w-12 h-12 border-t-2 border-b-2 border-yellow-400 rounded-full animate-spin mx-auto"></div>
       </div>
     </Html>

@@ -2,6 +2,7 @@ import { useState, FormEvent, forwardRef, useImperativeHandle, Ref } from "react
 
 export interface ChatInputRef {
   setValue: (value: string) => void;
+  submitForm: () => void;
 }
 
 interface ChatInputProps {
