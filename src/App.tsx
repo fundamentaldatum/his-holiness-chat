@@ -27,17 +27,29 @@ function createCheckerboardTexture(size = 256, squares = 8) {
 }
 
 // Function to get or create a unique user ID and check if it's a new user
-function getUserId(): { userId: string; isNewUser: boolean } {
+function getUserId(): { userId: string; isNewUser: boolean; welcomeShown: boolean } {
   let userId = localStorage.getItem('popeUserId');
   let isNewUser = false;
+  let welcomeShown = localStorage.getItem('popeWelcomeShown') === 'true';
   
   if (!userId) {
     userId = crypto.randomUUID(); // Generate a UUID
     localStorage.setItem('popeUserId', userId);
     isNewUser = true;
+    welcomeShown = false;
   }
   
-  return { userId, isNewUser };
+  return { userId, isNewUser, welcomeShown };
+}
+
+// Function to mark welcome message as shown
+function markWelcomeAsShown(): void {
+  localStorage.setItem('popeWelcomeShown', 'true');
+}
+
+// Function to clear welcome message flag
+function clearWelcomeFlag(): void {
+  localStorage.removeItem('popeWelcomeShown');
 }
 
 // Preload the model
@@ -134,7 +146,7 @@ function Model() {
   const lastDizzyMessageRef = useRef<number>(0);
   
   // Get the userId for sending messages
-  const { userId } = useMemo(() => getUserId(), []);
+  const { userId, isNewUser, welcomeShown } = useMemo(() => getUserId(), []);
   
   // Get the sendBotMessage mutation
   const sendBotMessage = useConvexMutation(api.messages.sendBotMessage);
@@ -274,10 +286,12 @@ function AbsolveModal({
 
 function ChatRoom() {
   // Get or create user ID and check if it's a new user
-  const { userId, isNewUser } = useMemo(() => getUserId(), []);
+  const { userId, isNewUser, welcomeShown } = useMemo(() => getUserId(), []);
   
   // Get messages with userId
   const messages = useQuery(api.messages.list, { userId }) || [];
+  const messagesLoaded = useRef(false);
+  const welcomeAttempted = useRef(false);
   
   // Mutations
   const sendMessage = useMutation(api.messages.send);
@@ -289,15 +303,31 @@ function ChatRoom() {
   const [isBurning, setIsBurning] = useState(false);
   const [showAbsolveModal, setShowAbsolveModal] = useState(false);
 
+  // Track when messages are loaded
+  useEffect(() => {
+    if (messages !== undefined) {
+      messagesLoaded.current = true;
+    }
+  }, [messages]);
+
   // Send welcome message for new users
   useEffect(() => {
-    if (isNewUser && messages.length === 0) {
-      sendBotMessage({
-        body: "Welcome, Penitent One, how many weeks has it been since your last confession?",
-        userId: userId
-      });
+    // Only proceed if messages have loaded and we haven't attempted to send welcome message yet
+    if (messagesLoaded.current && !welcomeAttempted.current) {
+      welcomeAttempted.current = true;
+      
+      // Check if we should send welcome message (new user or returning user who hasn't seen welcome)
+      if (!welcomeShown && messages.length === 0) {
+        sendBotMessage({
+          body: "Welcome, Penitent One, how many weeks has it been since your last confession?",
+          userId: userId
+        });
+        
+        // Mark welcome as shown to prevent showing it again
+        markWelcomeAsShown();
+      }
     }
-  }, [isNewUser, messages.length, sendBotMessage, userId]);
+  }, [welcomeShown, messages, sendBotMessage, userId]);
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -315,6 +345,10 @@ function ChatRoom() {
     setIsBurning(true);
     setTimeout(() => {
       clearMessages({ userId: userId });
+      // Clear welcome flag so user gets welcome message on next visit
+      clearWelcomeFlag();
+      // Reset welcome attempted flag so welcome message can be sent again
+      welcomeAttempted.current = false;
       setIsBurning(false);
     }, 1500); // Match the duration of the burning animation
   };
