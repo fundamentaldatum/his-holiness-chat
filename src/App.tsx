@@ -3,9 +3,10 @@ import { useMutation, useQuery, useMutation as useConvexMutation } from "convex/
 import { api } from "../convex/_generated/api";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, useGLTF, Html } from "@react-three/drei";
-import { ChatInput } from "./components/ChatInput";
+import { ChatInput, ChatInputRef } from "./components/ChatInput";
 import { ChatMessage } from "./components/ChatMessage";
 import { FireOverlay3D } from "./components/FireOverlay3D";
+import { ConfessionDropdown } from "./components/ConfessionDropdown";
 import * as THREE from "three";
 
 // Helper to create a checkerboard texture
@@ -279,6 +280,7 @@ function ChatRoom() {
   const clearMessages = useMutation(api.messages.clear);
   
   const chatContainerRef = useRef<HTMLDivElement>(null);
+  const chatInputRef = useRef<ChatInputRef>(null);
   const [isBurning, setIsBurning] = useState(false);
   const [showAbsolveModal, setShowAbsolveModal] = useState(false);
 
@@ -312,6 +314,13 @@ function ChatRoom() {
       author: "the Penitent",
       userId,
     });
+  };
+  
+  // Handle selecting a confession from the dropdown
+  const handleSelectConfession = (confession: string) => {
+    if (chatInputRef.current) {
+      chatInputRef.current.setValue(confession);
+    }
   };
 
   return (
@@ -397,7 +406,7 @@ function ChatRoom() {
               </div>
               {/* Input Field */}
               <div className="w-full mb-2">
-                <ChatInput onSubmit={handleSendMessage} />
+                <ChatInput ref={chatInputRef} onSubmit={handleSendMessage} />
               </div>
               
               {/* Buttons */}
@@ -409,6 +418,7 @@ function ChatRoom() {
                 >
                   CONFESS
                 </button>
+                <ConfessionDropdown onSelect={handleSelectConfession} disabled={isBurning} />
                 <button
                   onClick={handleClear}
                   className="almendra-font px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"

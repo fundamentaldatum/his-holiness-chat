@@ -1,13 +1,26 @@
-import { useState, FormEvent } from "react";
+import { useState, FormEvent, forwardRef, useImperativeHandle, Ref } from "react";
 
-export function ChatInput({
-  onSubmit,
-  onConfess,
-}: {
+export interface ChatInputRef {
+  setValue: (value: string) => void;
+}
+
+interface ChatInputProps {
   onSubmit: (body: string) => Promise<void>;
   onConfess?: () => void;
-}) {
+}
+
+export const ChatInput = forwardRef(function ChatInput(
+  { onSubmit, onConfess }: ChatInputProps,
+  ref: Ref<ChatInputRef>
+) {
   const [value, setValue] = useState("");
+
+  // Expose setValue method to parent components
+  useImperativeHandle(ref, () => ({
+    setValue: (newValue: string) => {
+      setValue(newValue);
+    }
+  }));
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -34,4 +47,4 @@ export function ChatInput({
       />
     </form>
   );
-}
+});
