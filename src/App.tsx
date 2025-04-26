@@ -200,7 +200,7 @@ function ChatRoom() {
         <div className="w-full max-w-5xl flex flex-col md:flex-row md:gap-12 gap-6 items-center md:items-stretch">
           {/* 3D Model */}
           <div className="w-full md:w-1/2 flex flex-col items-center justify-center md:justify-start md:pt-6">
-            <div className="w-full h-56 xs:h-64 sm:h-72 md:h-[28rem] lg:h-[32rem] relative">
+            <div className="w-full h-80 xs:h-88 sm:h-96 md:h-[28rem] lg:h-[32rem] relative">
               <Canvas camera={{ position: [0, 0, 5] }}>
                 <ambientLight intensity={0.5} />
                 <pointLight position={[10, 10, 10]} />
