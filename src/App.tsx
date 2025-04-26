@@ -536,10 +536,11 @@ function ChatRoom() {
                       >
                         CONFESS
                       </button>
-                      <ConfessionDropdown onSelect={handleSelectConfession} disabled={isBurning} />
+                      <ConfessionDropdown onSelect={handleSelectConfession} disabled={isBurning} type="venial" />
+                      <ConfessionDropdown onSelect={handleSelectConfession} disabled={isBurning} type="mortal" />
                       <button
                         onClick={handleClear}
-                        className="almendra-font px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                        className="almendra-font px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
                         disabled={isBurning}
                       >
                         ABSOLVE
