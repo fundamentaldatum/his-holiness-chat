@@ -134,9 +134,9 @@ Remember: You're not trying to be clever or self-aware about your situation - yo
             content: userMessage,
           },
         ],
-        temperature: 1.2,
+        temperature: 0.9,
         max_tokens: 250,
-        presence_penalty: 0.8,
+        presence_penalty: 0.9,
         frequency_penalty: 0.4,
       });
 
