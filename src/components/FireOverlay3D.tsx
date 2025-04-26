@@ -27,31 +27,74 @@ function lerpColor(a: string, b: string, t: number) {
   return `#${((1 << 24) + (rr << 16) + (rg << 8) + rb).toString(16).slice(1)}`;
 }
 
-// Create a flame-shaped geometry
+// Create a more realistic flame-shaped geometry
 function createFlameGeometry() {
   const geometry = new THREE.BufferGeometry();
   
-  // Create a teardrop/flame shape with vertices
+  // Create a more complex flame shape with vertices
   const vertices = [];
-  const segments = 8;
-  const height = 1.5;
+  const segments = 12; // More segments for smoother shape
+  const height = 1.8;  // Taller flame
   
-  // Top point
-  vertices.push(0, height, 0);
+  // Top point (slightly offset for asymmetry)
+  vertices.push(0.05, height, 0);
   
-  // Create the circular base with a pinched bottom
+  // Create intermediate points for a more natural flame shape
+  const midHeight = height * 0.6;
+  const quarterHeight = height * 0.3;
+  
+  // Add some intermediate points to create a more natural flame curve
   for (let i = 0; i <= segments; i++) {
     const angle = (i / segments) * Math.PI * 2;
-    const radius = 0.5 * (1 - Math.sin(angle * 2) * 0.2); // Slightly irregular circle
-    vertices.push(Math.cos(angle) * radius, 0, Math.sin(angle) * radius);
+    
+    // Vary the radius based on angle to create flickering effect
+    const baseRadius = 0.5 * (1 - Math.sin(angle * 3) * 0.15);
+    
+    // Add points at different heights for a more complex shape
+    if (i % 3 === 0) {
+      // Add a point at mid-height with varying radius
+      const midRadius = baseRadius * 0.7 * (1 + Math.sin(angle * 5) * 0.2);
+      vertices.push(
+        Math.cos(angle) * midRadius, 
+        midHeight + Math.sin(angle * 4) * 0.1, 
+        Math.sin(angle) * midRadius * 0.8
+      );
+    }
+    
+    if (i % 2 === 0) {
+      // Add a point at quarter-height
+      const quarterRadius = baseRadius * 0.85;
+      vertices.push(
+        Math.cos(angle) * quarterRadius, 
+        quarterHeight + Math.sin(angle * 2) * 0.05, 
+        Math.sin(angle) * quarterRadius * 0.9
+      );
+    }
+    
+    // Base points with a more natural, flickering shape
+    vertices.push(
+      Math.cos(angle) * baseRadius * (1 + Math.sin(angle * 7) * 0.05), 
+      0, 
+      Math.sin(angle) * baseRadius * 0.9
+    );
   }
   
-  // Create faces
+  // Create faces - we need to triangulate our more complex shape
   const indices = [];
-  for (let i = 1; i <= segments; i++) {
+  let vertexCount = vertices.length / 3;
+  
+  // Connect top point to all other points
+  for (let i = 1; i < vertexCount - 1; i++) {
     indices.push(0, i, i + 1);
   }
-  indices.push(0, segments, 1); // Close the loop
+  indices.push(0, vertexCount - 1, 1); // Close the loop
+  
+  // Connect intermediate points
+  for (let i = 1; i < vertexCount - 2; i++) {
+    if (i % 2 === 1) {
+      indices.push(i, i + 1, i + 2);
+    }
+  }
   
   geometry.setIndex(indices);
   geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
@@ -189,26 +232,32 @@ function SmokeParticles({ count = 40 }: { count?: number }) {
   );
 }
 
-// 3D fire particles with organic, flickering, flame-shaped particles
-function FireParticles({ count = 180 }: { count?: number }) {
+// 3D fire particles with more realistic, flickering, flame-shaped particles
+function FireParticles({ count = 220 }: { count?: number }) {
   const mesh = useRef<THREE.InstancedMesh>(null);
   const flameGeometry = useMemo(() => createFlameGeometry(), []);
   
-  // Each particle: [x, y, z, speed, baseSize, flickerPhase, wavePhase, lifetime, seed]
+  // Each particle with enhanced properties for more realistic flames
   const particles = useMemo(() => {
     const arr = [];
     for (let i = 0; i < count; i++) {
       arr.push({
-        x: (Math.random() - 0.5) * 2.2,
-        y: -1.2 - Math.random() * 0.2,
-        z: (Math.random() - 0.5) * 0.3,
-        speed: 0.7 + Math.random() * 0.7,
-        baseSize: 0.13 + Math.random() * 0.22,
+        x: (Math.random() - 0.5) * 2.0, // Slightly narrower distribution
+        y: -1.2 - Math.random() * 0.3,
+        z: (Math.random() - 0.5) * 0.4,
+        speed: 0.6 + Math.random() * 0.8, // More varied speeds
+        baseSize: 0.1 + Math.random() * 0.25, // More varied sizes
         flickerPhase: Math.random() * Math.PI * 2,
         wavePhase: Math.random() * Math.PI * 2,
-        lifetime: 1.2 + Math.random() * 0.7,
+        lifetime: 1.0 + Math.random() * 0.9, // Longer potential lifetime
         seed: Math.random(),
-        rotationSpeed: (Math.random() - 0.5) * 0.2, // Random rotation speed
+        rotationSpeed: (Math.random() - 0.5) * 0.3, // More rotation
+        // Add twist for more realistic flame movement
+        twistFactor: 0.2 + Math.random() * 0.4,
+        // Add unique flicker frequency
+        flickerFreq: 6 + Math.random() * 8,
+        // Add unique color bias (some flames more yellow, some more orange)
+        colorBias: Math.random() * 0.3,
       });
     }
     return arr;
@@ -220,45 +269,59 @@ function FireParticles({ count = 180 }: { count?: number }) {
     
     for (let i = 0; i < count; i++) {
       const p = particles[i];
-      // Particle progress (0 at base, 1 at tip)
+      // Particle progress with more natural variation
       let progress = ((t * p.speed + p.flickerPhase) % p.lifetime) / p.lifetime;
       
-      // Vertical movement with more natural flame-like motion
-      let y = p.y + progress * 2.5 + 
-              0.25 * Math.sin(t * 2 + p.wavePhase + i) + 
-              0.08 * Math.sin(t * 8 + p.seed * 10);
+      // Enhanced vertical movement with more natural flame-like motion
+      let y = p.y + progress * 2.7 + 
+              0.3 * Math.sin(t * 1.5 + p.wavePhase + i * 0.1) + 
+              0.1 * Math.sin(t * p.flickerFreq + p.seed * 10);
       
-      // More natural horizontal flame motion
+      // More complex horizontal flame motion with twist effect
       let x = p.x + 
-              0.18 * Math.sin(t * 6 + p.wavePhase + i) * (1 - progress) + 
-              0.08 * Math.sin(t * 12 + p.seed * 10) * (1 - progress * 0.5);
+              0.2 * Math.sin(t * 4 + p.wavePhase + i * 0.2) * (1 - progress * 0.7) + 
+              0.1 * Math.sin(t * 10 + p.seed * 10) * (1 - progress * 0.6) +
+              // Add spiral/twist effect as flames rise
+              p.twistFactor * progress * Math.sin(progress * 8 + t * 2);
       
-      // Size tapers as it rises, with natural flame shape
-      let size = p.baseSize * (1.1 - progress * 0.85) * 
-                (0.7 + 0.5 * Math.abs(Math.sin(t * 8 + p.flickerPhase + i)));
+      // Z-axis movement for more 3D effect
+      let z = p.z + 
+              0.05 * Math.sin(t * 3 + p.seed * 15) * progress;
       
-      // Color interpolates from base to tip with more natural gradient
-      let colorIdx = Math.floor(progress * (fireColors.length - 2));
-      let colorT = (progress * (fireColors.length - 2)) % 1;
+      // Size varies more naturally with height and flicker
+      let size = p.baseSize * (1.2 - progress * 0.9) * 
+                (0.75 + 0.45 * Math.abs(Math.sin(t * p.flickerFreq * 0.5 + p.flickerPhase)));
+      
+      // Enhanced color interpolation with individual flame color bias
+      let colorProgress = progress * (1 - p.colorBias); // Some flames stay yellow/orange longer
+      let colorIdx = Math.floor(colorProgress * (fireColors.length - 2));
+      let colorT = (colorProgress * (fireColors.length - 2)) % 1;
       let color = lerpColor(fireColors[colorIdx], fireColors[colorIdx + 1], colorT);
       
-      // Opacity fades out at tip, with extra flicker
-      let opacity = 0.7 * (1 - progress * 0.7) + 0.18 * Math.sin(t * 10 + p.seed * 20);
+      // Improved opacity with more natural fade
+      let opacity = 0.8 * (1 - progress * 0.65) + 
+                    0.2 * Math.sin(t * p.flickerFreq * 0.7 + p.seed * 20);
       
-      // Create matrix with rotation for more natural flame appearance
+      // Create matrix with enhanced transformations
       const matrix = new THREE.Matrix4();
-      matrix.makeTranslation(x, y, p.z);
+      matrix.makeTranslation(x, y, z);
       
-      // Add rotation to the flames
+      // Add more complex rotation to the flames
       const rotationMatrix = new THREE.Matrix4();
-      rotationMatrix.makeRotationZ(p.rotationSpeed * t + p.flickerPhase);
+      // Rotation around Y axis for twisting effect
+      rotationMatrix.makeRotationY(p.rotationSpeed * 0.5 * t + p.flickerPhase);
       matrix.multiply(rotationMatrix);
       
-      // Scale with more height for flame shape
+      // Rotation around Z for flickering effect
+      const zRotation = new THREE.Matrix4();
+      zRotation.makeRotationZ(p.rotationSpeed * t + p.flickerPhase + progress * 0.5);
+      matrix.multiply(zRotation);
+      
+      // Scale with more natural flame shape - wider at bottom, narrower at top
       matrix.multiply(new THREE.Matrix4().makeScale(
-        size * (0.8 + 0.4 * Math.sin(t + p.seed)), // Varying width
-        size * 1.8, // Height
-        size * 0.8  // Depth
+        size * (0.9 + 0.3 * Math.sin(t * 2 + p.seed) - progress * 0.3), // Width narrows at top
+        size * (1.9 + 0.2 * Math.sin(t + p.flickerPhase)), // Height
+        size * (0.7 - progress * 0.2)  // Depth decreases slightly at top
       ));
       
       mesh.current.setMatrixAt(i, matrix);
@@ -278,6 +341,7 @@ function FireParticles({ count = 180 }: { count?: number }) {
         transparent
         depthWrite={false}
         color="#ffd700"
+        blending={THREE.AdditiveBlending} // Add additive blending for more realistic fire glow
       />
     </instancedMesh>
   );
@@ -322,8 +386,8 @@ export function FireOverlay3D() {
       >
         <ambientLight intensity={0.3} />
         <FireLight />
-        <FireParticles count={180} />
-        <SmokeParticles count={40} />
+        <FireParticles count={220} />
+        <SmokeParticles count={50} />
         <FireBase />
       </Canvas>
     </div>
