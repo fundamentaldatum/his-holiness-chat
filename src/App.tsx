@@ -26,14 +26,18 @@ function createCheckerboardTexture(size = 256, squares = 8) {
   return texture;
 }
 
-// Function to get or create a unique user ID
-function getUserId() {
+// Function to get or create a unique user ID and check if it's a new user
+function getUserId(): { userId: string; isNewUser: boolean } {
   let userId = localStorage.getItem('popeUserId');
+  let isNewUser = false;
+  
   if (!userId) {
     userId = crypto.randomUUID(); // Generate a UUID
     localStorage.setItem('popeUserId', userId);
+    isNewUser = true;
   }
-  return userId;
+  
+  return { userId, isNewUser };
 }
 
 // Preload the model
@@ -130,7 +134,7 @@ function Model() {
   const lastDizzyMessageRef = useRef<number>(0);
   
   // Get the userId for sending messages
-  const userId = useMemo(() => getUserId(), []);
+  const { userId } = useMemo(() => getUserId(), []);
   
   // Get the sendBotMessage mutation
   const sendBotMessage = useConvexMutation(api.messages.sendBotMessage);
@@ -269,8 +273,8 @@ function AbsolveModal({
 }
 
 function ChatRoom() {
-  // Get or create user ID
-  const userId = useMemo(() => getUserId(), []);
+  // Get or create user ID and check if it's a new user
+  const { userId, isNewUser } = useMemo(() => getUserId(), []);
   
   // Get messages with userId
   const messages = useQuery(api.messages.list, { userId }) || [];
@@ -278,12 +282,24 @@ function ChatRoom() {
   // Mutations
   const sendMessage = useMutation(api.messages.send);
   const clearMessages = useMutation(api.messages.clear);
+  const sendBotMessage = useMutation(api.messages.sendBotMessage);
   
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const chatInputRef = useRef<ChatInputRef>(null);
   const [isBurning, setIsBurning] = useState(false);
   const [showAbsolveModal, setShowAbsolveModal] = useState(false);
 
+  // Send welcome message for new users
+  useEffect(() => {
+    if (isNewUser && messages.length === 0) {
+      sendBotMessage({
+        body: "Welcome, Penitent One, how many weeks has it been since your last confession?",
+        userId: userId
+      });
+    }
+  }, [isNewUser, messages.length, sendBotMessage, userId]);
+
+  // Scroll to bottom when messages change
   useEffect(() => {
     if (chatContainerRef.current) {
       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
@@ -298,7 +314,7 @@ function ChatRoom() {
     setShowAbsolveModal(false);
     setIsBurning(true);
     setTimeout(() => {
-      clearMessages({ userId });
+      clearMessages({ userId: userId });
       setIsBurning(false);
     }, 1500); // Match the duration of the burning animation
   };
@@ -312,7 +328,7 @@ function ChatRoom() {
     await sendMessage({
       body,
       author: "the Penitent",
-      userId,
+      userId: userId,
     });
   };
   
