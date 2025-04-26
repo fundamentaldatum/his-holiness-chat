@@ -171,3 +171,49 @@
 .message-burning::after {
   display: none;
 }
+
+/* Fixed Action Bar Styles */
+.fixed-action-bar {
+  transition: transform 0.3s ease;
+  will-change: transform;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* Add safe area inset padding for mobile devices */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .fixed-action-bar {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* Ensure content isn't hidden behind the fixed bar on mobile */
+@media (max-width: 767px) {
+  .chat-container-with-padding {
+    padding-bottom: calc(120px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+/* Scroll to bottom button styles */
+.scroll-to-bottom-button {
+  transition: all 0.3s ease;
+  opacity: 0.8;
+  transform: translateY(0);
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.scroll-to-bottom-button:hover {
+  opacity: 1;
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 0.8;
+    transform: translateY(0);
+  }
+}

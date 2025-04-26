@@ -302,6 +302,7 @@ function ChatRoom() {
   const chatInputRef = useRef<ChatInputRef>(null);
   const [isBurning, setIsBurning] = useState(false);
   const [showAbsolveModal, setShowAbsolveModal] = useState(false);
+  const [isScrolledUp, setIsScrolledUp] = useState(false);
 
   // Track when messages are loaded
   useEffect(() => {
@@ -329,10 +330,43 @@ function ChatRoom() {
     }
   }, [welcomeShown, messages, sendBotMessage, userId]);
 
-  // Scroll to bottom when messages change
+  // Detect scroll position to show/hide scroll-to-bottom button
   useEffect(() => {
+    const chatContainer = chatContainerRef.current;
+    if (!chatContainer) return;
+    
+    const handleScroll = () => {
+      // Show button when scrolled up more than 100px from bottom
+      const isScrolled = chatContainer.scrollHeight - chatContainer.scrollTop - chatContainer.clientHeight > 100;
+      setIsScrolledUp(isScrolled);
+    };
+    
+    chatContainer.addEventListener('scroll', handleScroll);
+    return () => chatContainer.removeEventListener('scroll', handleScroll);
+  }, []);
+  
+  // Scroll to bottom function
+  const scrollToBottom = useCallback(() => {
     if (chatContainerRef.current) {
       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+      setIsScrolledUp(false);
+    }
+  }, []);
+  
+  // Scroll to bottom when messages change or after a short delay (for mobile keyboard)
+  useEffect(() => {
+    if (chatContainerRef.current) {
+      // Immediate scroll
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+      
+      // Additional scroll after a short delay (helps with mobile keyboard appearance)
+      const scrollTimeout = setTimeout(() => {
+        if (chatContainerRef.current) {
+          chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+        }
+      }, 100);
+      
+      return () => clearTimeout(scrollTimeout);
     }
   }, [messages]);
 
@@ -363,6 +397,11 @@ function ChatRoom() {
       author: "the Penitent",
       userId: userId,
     });
+    
+    // Scroll to bottom after sending a message
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
   };
   
   // Handle selecting a confession from the dropdown
@@ -407,10 +446,11 @@ function ChatRoom() {
           </div>
           {/* Chat Section */}
           <div className="w-full md:w-1/2 flex flex-col flex-1 min-h-0">
-            <div className="flex flex-col flex-1 min-h-0">
+            <div className="flex flex-col flex-1 min-h-0 relative">
+              {/* Chat Messages Container with padding for fixed action bar */}
               <div
                 ref={chatContainerRef}
-                className="flex-1 overflow-y-auto mb-2 p-2 xs:p-3 sm:p-4 rounded chat-card border min-h-[200px] max-h-[40vh] xs:max-h-[50vh] sm:max-h-[60vh] md:max-h-[70vh] lg:max-h-[80vh] xl:max-h-[90vh] md:min-h-[28rem] lg:min-h-[32rem] relative"
+                className="flex-1 overflow-y-auto p-2 xs:p-3 sm:p-4 rounded chat-card border min-h-[200px] max-h-[40vh] xs:max-h-[50vh] sm:max-h-[60vh] md:max-h-[70vh] lg:max-h-[80vh] xl:max-h-[90vh] md:min-h-[28rem] lg:min-h-[32rem] relative pb-[120px] sm:pb-[100px] md:pb-4 chat-container-with-padding"
               >
                 {/* 3D Fire effect overlays */}
                 {isBurning && <FireOverlay3D />}
@@ -451,35 +491,56 @@ function ChatRoom() {
                     </div>
                   ))
                 )}
-              </div>
-              {/* Input Field */}
-              <div className="w-full mb-2">
-                <ChatInput ref={chatInputRef} onSubmit={handleSendMessage} />
+                
+                {/* Scroll to bottom button */}
+                {isScrolledUp && !isBurning && (
+                  <button
+                    onClick={scrollToBottom}
+                    className="fixed bottom-[130px] right-4 z-40 rounded-full bg-yellow-600 p-2 shadow-lg text-white scroll-to-bottom-button"
+                    aria-label="Scroll to bottom"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                  </button>
+                )}
               </div>
               
-              {/* Buttons */}
-              <div className="flex justify-center gap-4 w-full pb-2 xs:pb-3 sm:pb-4">
-                <button
-                  onClick={() => {
-                    if (chatInputRef.current) {
-                      chatInputRef.current.submitForm().catch(error => {
-                        console.error("Error submitting form:", error);
-                      });
-                    }
-                  }}
-                  className="almendra-font px-4 py-2 bg-indigo-700 text-white rounded hover:bg-indigo-800"
-                  disabled={isBurning}
-                >
-                  CONFESS
-                </button>
-                <ConfessionDropdown onSelect={handleSelectConfession} disabled={isBurning} />
-                <button
-                  onClick={handleClear}
-                  className="almendra-font px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-                  disabled={isBurning}
-                >
-                  ABSOLVE
-                </button>
+              {/* Fixed Action Bar */}
+              <div className="fixed bottom-0 left-0 right-0 md:static md:bottom-auto md:left-auto md:right-auto z-40 bg-gray-900/95 border-t border-gray-700 md:border-0 md:shadow-none fixed-action-bar">
+                <div className="container mx-auto px-2 sm:px-6 md:px-0 max-w-5xl">
+                  <div className="w-full md:w-1/2 ml-auto">
+                    {/* Input Field */}
+                    <div className="w-full pt-2 px-2">
+                      <ChatInput ref={chatInputRef} onSubmit={handleSendMessage} />
+                    </div>
+                    
+                    {/* Buttons */}
+                    <div className="flex justify-center gap-4 w-full py-2 xs:py-3">
+                      <button
+                        onClick={() => {
+                          if (chatInputRef.current) {
+                            chatInputRef.current.submitForm().catch(error => {
+                              console.error("Error submitting form:", error);
+                            });
+                          }
+                        }}
+                        className="almendra-font px-4 py-2 bg-indigo-700 text-white rounded hover:bg-indigo-800"
+                        disabled={isBurning}
+                      >
+                        CONFESS
+                      </button>
+                      <ConfessionDropdown onSelect={handleSelectConfession} disabled={isBurning} />
+                      <button
+                        onClick={handleClear}
+                        className="almendra-font px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                        disabled={isBurning}
+                      >
+                        ABSOLVE
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
