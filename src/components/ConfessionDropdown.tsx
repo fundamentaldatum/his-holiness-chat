@@ -1,5 +1,11 @@
 import { useState, useRef, useEffect, useLayoutEffect } from "react";
-import { createPortal } from "react-dom";
+
+// Declare the selectedConfession property on the Window interface
+declare global {
+  interface Window {
+    selectedConfession?: string;
+  }
+}
 
 interface ConfessionDropdownProps {
   onSelect: (confession: string) => void;
@@ -112,17 +118,29 @@ export function ConfessionDropdown({ onSelect, disabled, type = 'venial', mobile
   }, [isOpen, mobile]);
 
   const handleSelect = (confession: string) => {
-    console.log("Desktop confession selected:", confession);
+    console.log("Confession selected:", confession);
     
     // Call onSelect first to ensure the input field is updated
     onSelect(confession);
+    
+    // Store the selected confession in a global variable
+    // This helps with mobile compatibility
+    window.selectedConfession = confession;
+    
+    // Create and dispatch a custom event that the App component can listen for
+    const event = new CustomEvent('confessionSelected', { 
+      detail: { confession },
+      bubbles: true,
+      cancelable: true
+    });
+    document.dispatchEvent(event);
     
     // Try to directly update the input field as a fallback
     setTimeout(() => {
       // Find the input field in the DOM
       const inputField = document.querySelector('input[placeholder="What troubles you, my son..."]');
       if (inputField) {
-        console.log("ConfessionDropdown (desktop): Found input field, setting value directly");
+        console.log("ConfessionDropdown: Found input field, setting value directly");
         // Set the value directly
         (inputField as HTMLInputElement).value = confession;
         
@@ -133,7 +151,7 @@ export function ConfessionDropdown({ onSelect, disabled, type = 'venial', mobile
         const event = new Event('input', { bubbles: true });
         inputField.dispatchEvent(event);
       } else {
-        console.log("ConfessionDropdown (desktop): Input field not found in DOM");
+        console.log("ConfessionDropdown: Input field not found in DOM");
       }
       
       // Close the dropdown after setting the value
@@ -145,111 +163,16 @@ export function ConfessionDropdown({ onSelect, disabled, type = 'venial', mobile
     setIsOpen(!isOpen);
   };
 
-  // Handle mobile selection separately to ensure it works with the portal
-  const handleMobileSelect = (confession: string) => {
-    console.log("Mobile confession selected:", confession);
-    
-    // First, try to find all input fields in the document to debug
-    const allInputs = document.querySelectorAll('input');
-    console.log(`Found ${allInputs.length} input fields in the document`);
-    
-    // More aggressive approach for mobile
-    const updateInputField = () => {
-      // Try multiple selectors to find the input field
-      const inputSelectors = [
-        'input[placeholder="What troubles you, my son..."]',
-        'input.almendra-font',
-        'form input',
-        '.w-full input'
-      ];
-      
-      let inputField = null;
-      
-      // Try each selector until we find the input field
-      for (const selector of inputSelectors) {
-        const fields = document.querySelectorAll(selector);
-        console.log(`Selector "${selector}" found ${fields.length} elements`);
-        
-        if (fields.length > 0) {
-          inputField = fields[0];
-          console.log(`Found input field with selector: ${selector}`);
-          break;
-        }
-      }
-      
-      if (inputField) {
-        console.log("Mobile: Found input field, setting value directly to:", confession);
-        
-        // Set the value directly
-        (inputField as HTMLInputElement).value = confession;
-        
-        // Focus the input field
-        (inputField as HTMLInputElement).focus();
-        
-        // Try multiple approaches to update React's state
-        
-        // 1. Dispatch an input event
-        const inputEvent = new Event('input', { bubbles: true });
-        inputField.dispatchEvent(inputEvent);
-        
-        // 2. Dispatch a change event
-        const changeEvent = new Event('change', { bubbles: true });
-        inputField.dispatchEvent(changeEvent);
-        
-        // 3. Call the onSelect callback again after setting the value directly
-        setTimeout(() => {
-          onSelect(confession);
-        }, 10);
-        
-        return true;
-      } else {
-        console.log("Mobile: Input field not found in DOM with any selector");
-        return false;
-      }
-    };
-    
-    // Call onSelect first
-    onSelect(confession);
-    
-    // Try to update the input field immediately
-    let success = updateInputField();
-    
-    // If not successful, try again after a short delay
-    if (!success) {
-      setTimeout(() => {
-        console.log("Mobile: Retrying input field update after delay");
-        success = updateInputField();
-        
-        // If still not successful, try one more time with a longer delay
-        if (!success) {
-          setTimeout(() => {
-            console.log("Mobile: Final attempt to update input field");
-            updateInputField();
-            
-            // Close the dropdown regardless of success
-            setIsOpen(false);
-          }, 100);
-        } else {
-          // Close the dropdown after success
-          setIsOpen(false);
-        }
-      }, 50);
-    } else {
-      // Close the dropdown after success
-      setTimeout(() => {
-        setIsOpen(false);
-      }, 50);
-    }
-  };
+  // We now use the same handleSelect function for both mobile and desktop
 
   // Render the dropdown menu
   const renderDropdownMenu = () => {
-    // For mobile, render the dropdown as a portal at the bottom of the screen
+    // For mobile, render an inline dropdown that appears below the button
     if (mobile) {
-      return createPortal(
+      return (
         <div 
           className="fixed inset-x-0 bottom-0 z-[1000] bg-gray-800 border-t border-yellow-700 rounded-t-md shadow-lg overflow-hidden"
-          style={{ maxHeight: '50vh' }}
+          style={{ maxHeight: '40vh' }}
         >
           <div className="sticky top-0 bg-gray-900 p-2 border-b border-yellow-700 flex justify-between items-center">
             <span className="text-white almendra-font">
@@ -262,24 +185,18 @@ export function ConfessionDropdown({ onSelect, disabled, type = 'venial', mobile
               ✕
             </button>
           </div>
-          <div className="overflow-y-auto" style={{ maxHeight: 'calc(50vh - 40px)' }}>
+          <div className="overflow-y-auto" style={{ maxHeight: 'calc(40vh - 40px)' }}>
             {confessions.map((confession, index) => (
               <button
                 key={index}
                 className="w-full text-left px-3 py-3 text-sm text-white almendra-font hover:bg-gray-700 focus:outline-none border-b border-gray-700"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  console.log("Mobile confession button clicked:", confession);
-                  handleMobileSelect(confession);
-                }}
+                onClick={() => handleSelect(confession)} // Use the same handler for both mobile and desktop
               >
                 {confession}
               </button>
             ))}
           </div>
-        </div>,
-        document.body
+        </div>
       );
     }
     

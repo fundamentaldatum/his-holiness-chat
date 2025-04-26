@@ -436,6 +436,64 @@ function ChatRoom() {
       console.log("chatInputRef.current is null");
     }
   };
+  
+  // Listen for the custom confessionSelected event
+  useEffect(() => {
+    const handleConfessionSelected = (event: CustomEvent) => {
+      console.log("Custom event received:", event.detail);
+      
+      if (event.detail && event.detail.confession) {
+        const confession = event.detail.confession;
+        console.log("Setting confession from custom event:", confession);
+        
+        // Update all input fields in the document
+        const allInputs = document.querySelectorAll('input');
+        console.log(`Found ${allInputs.length} input fields to update`);
+        
+        allInputs.forEach((input, index) => {
+          if (input.placeholder === "What troubles you, my son...") {
+            console.log(`Updating input field ${index}`);
+            
+            // Set the value directly
+            (input as HTMLInputElement).value = confession;
+            
+            // Focus the input field
+            (input as HTMLInputElement).focus();
+            
+            // Dispatch events to ensure React's state is updated
+            const inputEvent = new Event('input', { bubbles: true });
+            input.dispatchEvent(inputEvent);
+            
+            const changeEvent = new Event('change', { bubbles: true });
+            input.dispatchEvent(changeEvent);
+            
+            // Also try to update via the ref
+            if (chatInputRef.current) {
+              chatInputRef.current.setValue(confession);
+            }
+          }
+        });
+        
+        // Also check for the global variable as a fallback
+        if (window.selectedConfession) {
+          console.log("Found confession in global variable:", window.selectedConfession);
+          
+          // Try to update via the ref
+          if (chatInputRef.current) {
+            chatInputRef.current.setValue(window.selectedConfession);
+          }
+        }
+      }
+    };
+    
+    // Add event listener for the custom event
+    document.addEventListener('confessionSelected', handleConfessionSelected as EventListener);
+    
+    // Clean up the event listener when the component unmounts
+    return () => {
+      document.removeEventListener('confessionSelected', handleConfessionSelected as EventListener);
+    };
+  }, []);
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-900">
@@ -599,73 +657,13 @@ function ChatRoom() {
               CONFESS
             </button>
             <ConfessionDropdown 
-              onSelect={(confession) => {
-                console.log("Mobile dropdown onSelect called with:", confession);
-                
-                // Call the regular handler
-                handleSelectConfession(confession);
-                
-                // Additional mobile-specific handling
-                setTimeout(() => {
-                  // Try to find the mobile input field specifically
-                  const mobileInputContainer = document.getElementById('mobile-input-container');
-                  if (mobileInputContainer) {
-                    const inputField = mobileInputContainer.querySelector('input');
-                    if (inputField) {
-                      console.log("Found mobile input field directly, setting value to:", confession);
-                      
-                      // Set the value directly
-                      (inputField as HTMLInputElement).value = confession;
-                      
-                      // Focus the input field
-                      (inputField as HTMLInputElement).focus();
-                      
-                      // Dispatch events to ensure React's state is updated
-                      const inputEvent = new Event('input', { bubbles: true });
-                      inputField.dispatchEvent(inputEvent);
-                      
-                      const changeEvent = new Event('change', { bubbles: true });
-                      inputField.dispatchEvent(changeEvent);
-                    }
-                  }
-                }, 10);
-              }} 
+              onSelect={handleSelectConfession} 
               disabled={isBurning} 
               type="venial" 
               mobile={true} 
             />
             <ConfessionDropdown 
-              onSelect={(confession) => {
-                console.log("Mobile dropdown onSelect called with:", confession);
-                
-                // Call the regular handler
-                handleSelectConfession(confession);
-                
-                // Additional mobile-specific handling
-                setTimeout(() => {
-                  // Try to find the mobile input field specifically
-                  const mobileInputContainer = document.getElementById('mobile-input-container');
-                  if (mobileInputContainer) {
-                    const inputField = mobileInputContainer.querySelector('input');
-                    if (inputField) {
-                      console.log("Found mobile input field directly, setting value to:", confession);
-                      
-                      // Set the value directly
-                      (inputField as HTMLInputElement).value = confession;
-                      
-                      // Focus the input field
-                      (inputField as HTMLInputElement).focus();
-                      
-                      // Dispatch events to ensure React's state is updated
-                      const inputEvent = new Event('input', { bubbles: true });
-                      inputField.dispatchEvent(inputEvent);
-                      
-                      const changeEvent = new Event('change', { bubbles: true });
-                      inputField.dispatchEvent(changeEvent);
-                    }
-                  }
-                }, 10);
-              }} 
+              onSelect={handleSelectConfession} 
               disabled={isBurning} 
               type="mortal" 
               mobile={true} 
