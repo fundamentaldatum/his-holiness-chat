@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, Suspense, ReactNode, useMemo, useCallback } from "react";
-import { useMutation, useQuery } from "convex/react";
+import { useMutation, useQuery, useMutation as useConvexMutation } from "convex/react";
 import { api } from "../convex/_generated/api";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, useGLTF, Html } from "@react-three/drei";
@@ -122,6 +122,18 @@ function Model() {
   const clockRef = useRef<THREE.Clock>(new THREE.Clock());
   const [isDefaultView, setIsDefaultView] = useState(true);
   
+  // Rotation tracking for dizziness detection
+  const lastRotationRef = useRef<number>(0);
+  const lastTimeRef = useRef<number>(Date.now());
+  const rotationSpeedRef = useRef<number>(0);
+  const lastDizzyMessageRef = useRef<number>(0);
+  
+  // Get the userId for sending messages
+  const userId = useMemo(() => getUserId(), []);
+  
+  // Get the sendBotMessage mutation
+  const sendBotMessage = useConvexMutation(api.messages.sendBotMessage);
+  
   // Function to handle camera movement
   const handleCameraChange = useCallback(() => {
     if (controlsRef.current) {
@@ -132,8 +144,37 @@ function Model() {
       // If the camera has moved significantly from the default view
       const isDefault = Math.abs(azimuthalAngle) < 0.1 && Math.abs(polarAngle - Math.PI / 2) < 0.1;
       setIsDefaultView(isDefault);
+      
+      // Calculate rotation speed
+      const currentTime = Date.now();
+      const timeDelta = currentTime - lastTimeRef.current;
+      
+      if (timeDelta > 0) {
+        const rotationDelta = Math.abs(azimuthalAngle - lastRotationRef.current);
+        rotationSpeedRef.current = rotationDelta / timeDelta * 1000; // rotations per second
+        
+        // Check if spinning too fast and cooldown period has passed
+        const SPIN_THRESHOLD = 2.0; // Adjust this threshold as needed
+        const COOLDOWN_PERIOD = 10000; // 10 seconds cooldown
+        
+        if (rotationSpeedRef.current > SPIN_THRESHOLD && 
+            currentTime - lastDizzyMessageRef.current > COOLDOWN_PERIOD) {
+          // Send dizzy message
+          sendBotMessage({
+            body: "Penitent One, the spinning... please...",
+            userId
+          });
+          
+          // Update last dizzy message time
+          lastDizzyMessageRef.current = currentTime;
+        }
+        
+        // Update last values
+        lastRotationRef.current = azimuthalAngle;
+        lastTimeRef.current = currentTime;
+      }
     }
-  }, []);
+  }, [sendBotMessage, userId]);
   
   // Function to reset the camera to default position
   const resetCamera = useCallback(() => {
