@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState, Suspense, ReactNode, useMemo } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../convex/_generated/api";
-import { Canvas } from "@react-three/fiber";
+import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, useGLTF, Html } from "@react-three/drei";
 import { ChatInput } from "./components/ChatInput";
 import { ChatMessage } from "./components/ChatMessage";
@@ -94,10 +94,22 @@ class ModelErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBounda
   }
 }
 
-// The actual model component
+// The actual model component with oscillating rotation
 function Model() {
   const { scene } = useGLTF('/pope_francis.glb');
-  return <primitive object={scene} scale={2.5} />;
+  const modelRef = useRef<THREE.Group | null>(null);
+  
+  // Use useFrame to create an oscillating rotation
+  useFrame(({ clock }) => {
+    if (modelRef.current) {
+      // Use sine function to create oscillating motion
+      // Math.sin produces values between -1 and 1
+      // Multiply by 0.5 to limit rotation range to approximately 30 degrees each way
+      modelRef.current.rotation.y = Math.sin(clock.getElapsedTime() * 0.5) * 0.5;
+    }
+  });
+  
+  return <primitive ref={modelRef} object={scene} scale={2.5} />;
 }
 
 function AbsolveModal({
@@ -226,8 +238,6 @@ function ChatRoom() {
                     ONE: THREE.TOUCH.ROTATE,
                     TWO: undefined,
                   }}
-                  autoRotate
-                  autoRotateSpeed={2}
                 />
               </Canvas>
               <div className="text-center -mt-8 relative z-10">
@@ -309,17 +319,15 @@ function ChatRoom() {
           </div>
         </div>
       </main>
-      {/* Fade in/out animation for overlay message */}
-      <style>
-        {`
+      
+      <style>{`
         @keyframes fadeInOut {
           0% { opacity: 0; }
           10% { opacity: 1; }
           90% { opacity: 1; }
           100% { opacity: 0; }
         }
-        `}
-      </style>
+      `}</style>
     </div>
   );
 }
