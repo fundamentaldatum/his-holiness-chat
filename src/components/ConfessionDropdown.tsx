@@ -233,7 +233,7 @@ export function ConfessionDropdown({ onSelect, disabled, type = 'venial', mobile
         ref={buttonRef}
         type="button"
         onClick={toggleDropdown}
-        className={`almendra-font ${mobile ? 'text-xs whitespace-nowrap px-2 py-2 flex-1 mx-1' : 'text-sm xs:text-base px-3 xs:px-4 py-2'} ${type === 'venial' ? 'bg-yellow-600 hover:bg-yellow-700' : 'bg-red-700 hover:bg-red-800'} text-white rounded`}
+        className={`almendra-font ${mobile ? 'text-xs whitespace-nowrap px-2 py-2 flex-1 mx-1 text-center' : 'text-sm xs:text-base px-3 xs:px-4 py-2 w-32 text-center'} ${type === 'venial' ? 'bg-yellow-600 hover:bg-yellow-700' : 'bg-red-700 hover:bg-red-800'} text-white rounded`}
         disabled={disabled}
       >
         {type === 'venial' ? 'VENIAL SINS' : 'MORTAL SINS'}

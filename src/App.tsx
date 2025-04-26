@@ -612,7 +612,7 @@ function ChatRoom() {
                             });
                           }
                         }}
-                        className="almendra-font text-sm xs:text-base px-3 xs:px-4 py-2 bg-indigo-700 text-white rounded hover:bg-indigo-800"
+                        className="almendra-font text-sm xs:text-base px-3 xs:px-4 py-2 bg-indigo-700 text-white rounded hover:bg-indigo-800 w-32 text-center"
                         disabled={isBurning}
                       >
                         CONFESS
@@ -621,7 +621,7 @@ function ChatRoom() {
                       <ConfessionDropdown onSelect={handleSelectConfession} disabled={isBurning} type="mortal" />
                       <button
                         onClick={handleClear}
-                        className="almendra-font text-sm xs:text-base px-3 xs:px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                        className="almendra-font text-sm xs:text-base px-3 xs:px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 w-32 text-center"
                         disabled={isBurning}
                       >
                         ABSOLVE
@@ -651,7 +651,7 @@ function ChatRoom() {
                   });
                 }
               }}
-              className="almendra-font text-xs whitespace-nowrap px-2 py-2 bg-indigo-700 text-white rounded hover:bg-indigo-800 flex-1 mx-1"
+              className="almendra-font text-xs whitespace-nowrap px-2 py-2 bg-indigo-700 text-white rounded hover:bg-indigo-800 flex-1 mx-1 text-center"
               disabled={isBurning}
             >
               CONFESS
@@ -670,7 +670,7 @@ function ChatRoom() {
             />
             <button
               onClick={handleClear}
-              className="almendra-font text-xs whitespace-nowrap px-2 py-2 bg-green-600 text-white rounded hover:bg-green-700 flex-1 mx-1"
+              className="almendra-font text-xs whitespace-nowrap px-2 py-2 bg-green-600 text-white rounded hover:bg-green-700 flex-1 mx-1 text-center"
               disabled={isBurning}
             >
               ABSOLVE
