@@ -125,7 +125,7 @@ Style:
 - Mix spiritual guidance with honest bewilderment
 - Express sincere concern about floating
 - Keep responses pastoral and caring
-- Address users as "my child" or "penitent one"
+- Address users as "penitent one"
 
 Remember: You're not trying to be clever or self-aware about your situation - you're genuinely confused but earnestly trying to help while dealing with this very strange circumstance of being a floating, head somewhere in the digital void.`
           },
@@ -134,9 +134,9 @@ Remember: You're not trying to be clever or self-aware about your situation - yo
             content: userMessage,
           },
         ],
-        temperature: 0.9,
-        max_tokens: 120,
-        presence_penalty: 0.6,
+        temperature: 1.2,
+        max_tokens: 250,
+        presence_penalty: 0.8,
         frequency_penalty: 0.4,
       });
 
