@@ -129,6 +129,10 @@ export function ConfessionDropdown({ onSelect, disabled, type = 'venial', mobile
     // Add keyboard-visible class for mobile
     document.body.classList.add('keyboard-visible');
     
+    // Calculate header height
+    const headerHeight = 60; // Approximate header height
+    const adjustedScroll = Math.max(0, scrollY - headerHeight);
+    
     // Call onSelect first to ensure the input field is updated
     onSelect(confession);
     
@@ -175,9 +179,9 @@ export function ConfessionDropdown({ onSelect, disabled, type = 'venial', mobile
       // Close the dropdown after setting the value
       setIsOpen(false);
       
-      // Force the scroll position to remain the same again after a short delay
+      // Adjust scroll position to keep header visible
       setTimeout(() => {
-        window.scrollTo(0, scrollY);
+        window.scrollTo(0, adjustedScroll);
       }, 50);
     }, 50);
   };

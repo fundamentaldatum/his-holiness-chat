@@ -318,8 +318,14 @@ function ChatRoom() {
     }
   }, [messages]);
   
-  // Detect keyboard visibility
+  // Set app height custom property for mobile browsers
   useEffect(() => {
+    const setAppHeight = () => {
+      const doc = document.documentElement;
+      doc.style.setProperty('--app-height', `${window.innerHeight}px`);
+    };
+    
+    // Detect keyboard visibility
     const detectKeyboard = () => {
       // Compare window.innerHeight with initial height
       if (window.initialHeight) {
@@ -333,8 +339,20 @@ function ChatRoom() {
       window.initialHeight = window.innerHeight;
     }
     
-    window.addEventListener('resize', detectKeyboard);
-    return () => window.removeEventListener('resize', detectKeyboard);
+    // Set the initial app height
+    setAppHeight();
+    
+    // Add event listeners
+    window.addEventListener('resize', () => {
+      setAppHeight();
+      detectKeyboard();
+    });
+    window.addEventListener('orientationchange', setAppHeight);
+    
+    return () => {
+      window.removeEventListener('resize', detectKeyboard);
+      window.removeEventListener('orientationchange', setAppHeight);
+    };
   }, []);
 
   // Send welcome message for new users
@@ -528,14 +546,14 @@ function ChatRoom() {
         onConfirm={handleConfirmAbsolve}
         onCancel={handleCancelAbsolve}
       />
-      {/* Header */}
-      <header className="w-full py-4 px-2 text-center sticky top-0 z-30 bg-gray-900/95 sticky">
+      {/* Header - Fixed position for mobile */}
+      <header className="w-full py-4 px-2 text-center fixed-header">
         <h1 className="text-2xl xs:text-3xl sm:text-4xl md:text-4xl latin-header animated-gold-glow break-words">
           HIS HOLINESS WILL SEE YOU NOW
         </h1>
       </header>
-      {/* Main Content Area */}
-      <main className="flex-1 flex flex-col items-center justify-center w-full px-2 sm:px-4 md:px-8 lg:px-16 xl:px-24 py-2 sm:py-4">
+      {/* Main Content Area - With padding to account for fixed header */}
+      <main className="flex-1 flex flex-col items-center justify-center w-full px-2 sm:px-4 md:px-8 lg:px-16 xl:px-24 py-2 sm:py-4 main-content">
         <div className="w-full max-w-5xl flex flex-row gap-2 xs:gap-3 sm:gap-6 md:gap-8 lg:gap-12 items-stretch">
           {/* 3D Model */}
           <div className="w-[45%] sm:w-[48%] md:w-1/2 flex flex-col items-center justify-start pt-2 sm:pt-4 md:pt-6">
@@ -661,15 +679,15 @@ function ChatRoom() {
           </div>
         </div>
         
-        {/* Mobile-specific full-width input and buttons */}
+        {/* Mobile-specific full-width input and buttons - Reduced height */}
         <div className="w-full sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-gray-900/95 border-t border-gray-800 pb-safe">
           {/* Input Field - Full Width */}
-          <div className="w-full px-3 pt-3" id="mobile-input-container">
+          <div className="w-full px-3 pt-2 pb-1" id="mobile-input-container">
             <ChatInput ref={chatInputRef} onSubmit={handleSendMessage} />
           </div>
           
-          {/* Buttons - Single Row */}
-          <div className="flex justify-between px-3 py-3 overflow-x-auto no-scrollbar">
+          {/* Buttons - Single Row with reduced height */}
+          <div className="flex justify-between px-3 py-2 overflow-x-auto no-scrollbar">
             <button
               onClick={() => {
                 if (chatInputRef.current) {
@@ -678,7 +696,7 @@ function ChatRoom() {
                   });
                 }
               }}
-              className="almendra-font text-xs whitespace-nowrap px-2 py-2 bg-indigo-700 text-white rounded hover:bg-indigo-800 flex-1 mx-1 text-center"
+              className="almendra-font text-xs whitespace-nowrap px-2 py-1 bg-indigo-700 text-white rounded hover:bg-indigo-800 flex-1 mx-1 text-center"
               disabled={isBurning}
             >
               CONFESS
@@ -697,7 +715,7 @@ function ChatRoom() {
             />
             <button
               onClick={handleClear}
-              className="almendra-font text-xs whitespace-nowrap px-2 py-2 bg-green-600 text-white rounded hover:bg-green-700 flex-1 mx-1 text-center"
+              className="almendra-font text-xs whitespace-nowrap px-2 py-1 bg-green-600 text-white rounded hover:bg-green-700 flex-1 mx-1 text-center"
               disabled={isBurning}
             >
               ABSOLVE

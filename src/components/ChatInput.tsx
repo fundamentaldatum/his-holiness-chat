@@ -70,17 +70,27 @@ export const ChatInput = forwardRef(function ChatInput(
 
   // Prevent scroll jumping when input is focused
   const preventScroll = useCallback((e: React.FocusEvent) => {
-    // Store current scroll position
+    // Get the current scroll position
     const scrollY = window.scrollY;
+    
+    // Store the current position of the input field
+    const inputRect = e.target.getBoundingClientRect();
+    const inputTop = inputRect.top + scrollY;
     
     // Apply a class to lock the scroll position
     document.body.classList.add('input-focused');
     
-    // Force the scroll position to remain the same
-    window.scrollTo(0, scrollY);
-    
     // Add keyboard-visible class for mobile
     document.body.classList.add('keyboard-visible');
+    
+    // Calculate how much to adjust the scroll to keep the header visible
+    const headerHeight = 60; // Approximate header height
+    const adjustedScroll = Math.max(0, inputTop - headerHeight - 20);
+    
+    // Set the scroll position to keep both header and input visible
+    setTimeout(() => {
+      window.scrollTo(0, adjustedScroll);
+    }, 10);
   }, []);
   
   // Handle blur event
