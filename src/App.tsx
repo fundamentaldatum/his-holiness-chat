@@ -547,16 +547,16 @@ function ChatRoom() {
         onCancel={handleCancelAbsolve}
       />
       {/* Header - Fixed position for mobile */}
-      <header className="w-full py-4 px-2 text-center fixed-header">
+      <header className="w-full py-2 xs:py-4 px-2 text-center fixed-header">
         <h1 className="text-2xl xs:text-3xl sm:text-4xl md:text-4xl latin-header animated-gold-glow break-words">
           HIS HOLINESS WILL SEE YOU NOW
         </h1>
       </header>
       {/* Main Content Area - With padding to account for fixed header */}
-      <main className="flex-1 flex flex-col items-center justify-center w-full px-2 sm:px-4 md:px-8 lg:px-16 xl:px-24 py-2 sm:py-4 main-content">
-        <div className="w-full max-w-5xl flex flex-row gap-2 xs:gap-3 sm:gap-6 md:gap-8 lg:gap-12 items-stretch">
+      <main className="flex-1 flex flex-col items-center justify-center w-full px-1 sm:px-4 md:px-8 lg:px-16 xl:px-24 py-2 sm:py-4 main-content">
+        <div className="w-full max-w-5xl flex flex-row gap-1 xs:gap-3 sm:gap-6 md:gap-8 lg:gap-12 items-stretch">
           {/* 3D Model */}
-          <div className="w-[45%] sm:w-[48%] md:w-1/2 flex flex-col items-center justify-start pt-2 sm:pt-4 md:pt-6">
+          <div className="w-[45%] sm:w-[48%] md:w-1/2 flex flex-col items-center justify-start pt-0 sm:pt-4 md:pt-6">
             <div className="w-full h-[40vh] xs:h-[45vh] sm:h-[50vh] md:h-[55vh] lg:h-[60vh] relative">
               <Canvas camera={{ position: [0, 0, 5] }}>
                 <ambientLight intensity={0.5} />
@@ -578,7 +578,7 @@ function ChatRoom() {
               {/* Chat Messages Container with consistent dimensions for all devices */}
               <div
                 ref={chatContainerRef}
-                className="overflow-y-auto p-2 xs:p-3 sm:p-4 rounded chat-card border 
+                className="overflow-y-auto p-1 xs:p-3 sm:p-4 rounded chat-card border 
                   min-h-[40vh] xs:min-h-[45vh] sm:min-h-[50vh] md:min-h-[55vh] lg:min-h-[60vh]
                   h-[40vh] xs:h-[45vh] sm:h-[50vh] md:h-[55vh] lg:h-[60vh]
                   max-h-[40vh] xs:max-h-[45vh] sm:max-h-[50vh] md:max-h-[55vh] lg:max-h-[60vh]

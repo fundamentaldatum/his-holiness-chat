@@ -270,14 +270,14 @@ body, html {
   /* Add padding for mobile chat container to account for fixed input bar */
   .chat-container-with-padding {
     padding-bottom: 60px !important;
-    height: calc(var(--app-height) - 200px) !important;
-    max-height: calc(var(--app-height) - 200px) !important;
+    height: calc(var(--app-height) - 160px) !important;
+    max-height: calc(var(--app-height) - 160px) !important;
   }
   
   /* Adjust when virtual keyboard is likely present */
   .keyboard-visible .chat-container-with-padding {
-    height: calc(var(--app-height) - 350px) !important;
-    max-height: calc(var(--app-height) - 350px) !important;
+    height: calc(var(--app-height) - 310px) !important;
+    max-height: calc(var(--app-height) - 310px) !important;
   }
   
   /* Ensure the header remains visible */
@@ -297,7 +297,7 @@ body, html {
   
   /* Adjust main content to account for fixed header */
   .main-content {
-    padding-top: 60px !important;
+    padding-top: 20px !important;
   }
 }
 
@@ -342,7 +342,7 @@ body, html {
 
 /* Main content with padding for fixed header */
 .main-content {
-  padding-top: 60px;
+  padding-top: 20px; /* Reduced padding for mobile */
 }
 
 @media (min-width: 640px) {
