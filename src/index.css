@@ -198,12 +198,17 @@ body, html {
   max-height: 100%;
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+  pointer-events: auto !important; /* Ensure scrolling is always enabled */
+  touch-action: pan-y; /* Enable vertical touch scrolling */
+  overscroll-behavior: contain; /* Prevent scroll chaining */
 }
 
 /* Ensure the chat card has proper dimensions for the fire effect */
 .chat-card {
   position: relative;
   overflow: hidden;
+  pointer-events: auto !important; /* Ensure scrolling is always enabled */
+  touch-action: pan-y; /* Enable vertical touch scrolling */
 }
 
 /* FireOverlay3D specific styles */
@@ -277,6 +282,8 @@ body, html {
     height: calc(var(--app-height) - 160px) !important;
     max-height: calc(var(--app-height) - 160px) !important;
     -webkit-overflow-scrolling: touch; /* Ensure smooth scrolling on iOS */
+    pointer-events: auto !important; /* Ensure scrolling is always enabled */
+    touch-action: pan-y; /* Enable vertical touch scrolling */
   }
   
   /* Ensure the scroll to bottom button is visible and accessible on mobile */
@@ -329,12 +336,20 @@ body, html {
   padding-bottom: env(safe-area-inset-bottom, 0.5rem);
 }
 
-/* Prevent scroll jumping when input is focused */
+/* Prevent scroll jumping when input is focused, but allow chat scrolling */
 .input-focused {
-  overflow: hidden;
+  overflow: auto;
   position: fixed;
   width: 100%;
   height: var(--app-height);
+}
+
+/* Ensure chat messages are always scrollable */
+.message-burning {
+  position: relative;
+  z-index: 1;
+  transition: opacity 0.5s;
+  pointer-events: auto !important;
 }
 
 /* Adjust body when keyboard is visible */

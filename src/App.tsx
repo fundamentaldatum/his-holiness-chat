@@ -321,6 +321,10 @@ function ChatRoom() {
     }
   }, [messages]);
   
+  // Track if user is actively scrolling to prevent auto-scroll interference
+  const isUserScrollingRef = useRef<boolean>(false);
+  const userScrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
   // Set up MutationObserver to detect changes in chat content
   useEffect(() => {
     const chatContainer = chatContainerRef.current;
@@ -329,8 +333,14 @@ function ChatRoom() {
     // Create a new MutationObserver
     const observer = new MutationObserver((mutations) => {
       // Only auto-scroll if we're already at the bottom or shouldAutoScroll is true
-      if (shouldAutoScroll) {
-        scrollToBottom();
+      // AND the user is not actively scrolling
+      if (shouldAutoScroll && !isUserScrollingRef.current) {
+        // Use a small delay to allow any user scrolling to complete
+        setTimeout(() => {
+          if (shouldAutoScroll && !isUserScrollingRef.current && chatContainerRef.current) {
+            chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+          }
+        }, 50);
       }
     });
     
@@ -414,6 +424,19 @@ function ChatRoom() {
     if (!chatContainer) return;
     
     const handleScroll = () => {
+      // Mark that user is actively scrolling
+      isUserScrollingRef.current = true;
+      
+      // Clear any existing timeout
+      if (userScrollTimeoutRef.current) {
+        clearTimeout(userScrollTimeoutRef.current);
+      }
+      
+      // Set a timeout to mark scrolling as complete after a short delay
+      userScrollTimeoutRef.current = setTimeout(() => {
+        isUserScrollingRef.current = false;
+      }, 150);
+      
       // Calculate distance from bottom
       const distanceFromBottom = chatContainer.scrollHeight - chatContainer.scrollTop - chatContainer.clientHeight;
       
@@ -428,13 +451,22 @@ function ChatRoom() {
       lastScrollHeightRef.current = chatContainer.scrollHeight;
     };
     
-    chatContainer.addEventListener('scroll', handleScroll);
-    return () => chatContainer.removeEventListener('scroll', handleScroll);
+    // Add both scroll and touchmove events for better mobile support
+    chatContainer.addEventListener('scroll', handleScroll, { passive: true });
+    chatContainer.addEventListener('touchmove', handleScroll, { passive: true });
+    
+    return () => {
+      chatContainer.removeEventListener('scroll', handleScroll);
+      chatContainer.removeEventListener('touchmove', handleScroll);
+    };
   }, []);
   
   // Enhanced scroll to bottom function
   const scrollToBottom = useCallback(() => {
     if (chatContainerRef.current) {
+      // Temporarily disable user scrolling detection to prevent conflicts
+      isUserScrollingRef.current = false;
+      
       // Smooth scroll to bottom
       chatContainerRef.current.scrollTo({
         top: chatContainerRef.current.scrollHeight,
@@ -449,6 +481,9 @@ function ChatRoom() {
   useEffect(() => {
     if (!chatContainerRef.current || !shouldAutoScroll) return;
     
+    // Temporarily disable user scrolling detection to prevent conflicts
+    isUserScrollingRef.current = false;
+    
     // Immediate scroll
     chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
     
@@ -456,19 +491,19 @@ function ChatRoom() {
     // This helps with both mobile keyboard appearance and incremental text updates
     const scrollTimeouts = [
       setTimeout(() => {
-        if (chatContainerRef.current && shouldAutoScroll) {
+        if (chatContainerRef.current && shouldAutoScroll && !isUserScrollingRef.current) {
           chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
         }
       }, 100),
       
       setTimeout(() => {
-        if (chatContainerRef.current && shouldAutoScroll) {
+        if (chatContainerRef.current && shouldAutoScroll && !isUserScrollingRef.current) {
           chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
         }
       }, 300),
       
       setTimeout(() => {
-        if (chatContainerRef.current && shouldAutoScroll) {
+        if (chatContainerRef.current && shouldAutoScroll && !isUserScrollingRef.current) {
           chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
         }
       }, 500)
@@ -647,6 +682,8 @@ function ChatRoom() {
                   h-[40vh] xs:h-[45vh] sm:h-[50vh] md:h-[55vh] lg:h-[60vh]
                   max-h-[40vh] xs:max-h-[45vh] sm:max-h-[50vh] md:max-h-[55vh] lg:max-h-[60vh]
                   relative pb-4 chat-container-with-padding"
+                style={{ touchAction: 'pan-y', WebkitOverflowScrolling: 'touch' }}
+                tabIndex={0} // Make the container focusable for better keyboard navigation
               >
                 {/* 3D Fire effect overlays */}
                 {isBurning && <FireOverlay3D />}
