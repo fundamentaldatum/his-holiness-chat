@@ -1,4 +1,4 @@
-import { useState, FormEvent, forwardRef, useImperativeHandle, useRef, useEffect, Ref } from "react";
+import { useState, FormEvent, forwardRef, useImperativeHandle, useRef, useEffect, useCallback, Ref } from "react";
 
 export interface ChatInputRef {
   setValue: (value: string) => void;
@@ -68,6 +68,30 @@ export const ChatInput = forwardRef(function ChatInput(
     };
   }, []);
 
+  // Prevent scroll jumping when input is focused
+  const preventScroll = useCallback((e: React.FocusEvent) => {
+    // Store current scroll position
+    const scrollY = window.scrollY;
+    
+    // Apply a class to lock the scroll position
+    document.body.classList.add('input-focused');
+    
+    // Force the scroll position to remain the same
+    window.scrollTo(0, scrollY);
+    
+    // Add keyboard-visible class for mobile
+    document.body.classList.add('keyboard-visible');
+  }, []);
+  
+  // Handle blur event
+  const handleBlur = useCallback(() => {
+    // Remove the input-focused class
+    document.body.classList.remove('input-focused');
+    
+    // Remove keyboard-visible class
+    document.body.classList.remove('keyboard-visible');
+  }, []);
+  
   // Expose methods to parent components
   useImperativeHandle(ref, () => ({
     setValue: (newValue: string) => {
@@ -130,6 +154,8 @@ export const ChatInput = forwardRef(function ChatInput(
           console.log("Input onChange:", e.target.value);
           setValue(e.target.value);
         }}
+        onFocus={preventScroll}
+        onBlur={handleBlur}
         placeholder="What troubles you, my son..."
         autoComplete="off"
         spellCheck={false}

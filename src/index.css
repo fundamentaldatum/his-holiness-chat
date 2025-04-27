@@ -261,6 +261,24 @@
   .chat-container-with-padding {
     padding-bottom: 60px !important;
   }
+  
+  /* Adjust when virtual keyboard is likely present */
+  .keyboard-visible .chat-container-with-padding {
+    height: 25vh !important;
+    max-height: 25vh !important;
+  }
+  
+  /* Ensure the header remains visible */
+  header.sticky {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 50 !important;
+  }
+  
+  /* Prevent content from being hidden under the keyboard */
+  .keyboard-visible main {
+    padding-bottom: 40vh !important;
+  }
 }
 
 /* Hide scrollbar for mobile button row */
@@ -276,6 +294,20 @@
 /* Safe area padding for iOS devices */
 .pb-safe {
   padding-bottom: env(safe-area-inset-bottom, 0.5rem);
+}
+
+/* Prevent scroll jumping when input is focused */
+.input-focused {
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+  height: 100%;
+}
+
+/* Adjust body when keyboard is visible */
+.keyboard-visible {
+  height: auto !important;
+  overflow: auto !important;
 }
 
 @keyframes fadeIn {

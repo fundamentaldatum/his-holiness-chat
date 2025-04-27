@@ -9,6 +9,13 @@ import { FireOverlay3D } from "./components/FireOverlay3D";
 import { ConfessionDropdown } from "./components/ConfessionDropdown";
 import * as THREE from "three";
 
+// Declare the initialHeight property on the Window interface
+declare global {
+  interface Window {
+    initialHeight?: number;
+  }
+}
+
 // Helper to create a checkerboard texture
 function createCheckerboardTexture(size = 256, squares = 8) {
   const canvas = document.createElement("canvas");
@@ -310,6 +317,25 @@ function ChatRoom() {
       messagesLoaded.current = true;
     }
   }, [messages]);
+  
+  // Detect keyboard visibility
+  useEffect(() => {
+    const detectKeyboard = () => {
+      // Compare window.innerHeight with initial height
+      if (window.initialHeight) {
+        const isKeyboardVisible = window.innerHeight < window.initialHeight * 0.8;
+        document.body.classList.toggle('keyboard-visible', isKeyboardVisible);
+      }
+    };
+    
+    // Store initial height
+    if (!window.initialHeight) {
+      window.initialHeight = window.innerHeight;
+    }
+    
+    window.addEventListener('resize', detectKeyboard);
+    return () => window.removeEventListener('resize', detectKeyboard);
+  }, []);
 
   // Send welcome message for new users
   useEffect(() => {
@@ -503,7 +529,7 @@ function ChatRoom() {
         onCancel={handleCancelAbsolve}
       />
       {/* Header */}
-      <header className="w-full py-4 px-2 text-center sticky top-0 z-30 bg-gray-900/95">
+      <header className="w-full py-4 px-2 text-center sticky top-0 z-30 bg-gray-900/95 sticky">
         <h1 className="text-2xl xs:text-3xl sm:text-4xl md:text-4xl latin-header animated-gold-glow break-words">
           HIS HOLINESS WILL SEE YOU NOW
         </h1>

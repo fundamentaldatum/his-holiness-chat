@@ -120,6 +120,15 @@ export function ConfessionDropdown({ onSelect, disabled, type = 'venial', mobile
   const handleSelect = (confession: string) => {
     console.log("Confession selected:", confession);
     
+    // Store current scroll position
+    const scrollY = window.scrollY;
+    
+    // Apply a class to lock the scroll position
+    document.body.classList.add('input-focused');
+    
+    // Add keyboard-visible class for mobile
+    document.body.classList.add('keyboard-visible');
+    
     // Call onSelect first to ensure the input field is updated
     onSelect(confession);
     
@@ -144,8 +153,17 @@ export function ConfessionDropdown({ onSelect, disabled, type = 'venial', mobile
         // Set the value directly
         (inputField as HTMLInputElement).value = confession;
         
-        // Focus the input field
-        (inputField as HTMLInputElement).focus();
+        // Focus the input field without scrolling
+        if (mobile) {
+          // For mobile, we need to be careful about focusing to prevent scroll jumps
+          // Focus the input field
+          (inputField as HTMLInputElement).focus();
+          // Force the scroll position to remain the same
+          window.scrollTo(0, scrollY);
+        } else {
+          // For desktop, normal focus is fine
+          (inputField as HTMLInputElement).focus();
+        }
         
         // Dispatch an input event to ensure React's state is updated
         const event = new Event('input', { bubbles: true });
@@ -156,6 +174,11 @@ export function ConfessionDropdown({ onSelect, disabled, type = 'venial', mobile
       
       // Close the dropdown after setting the value
       setIsOpen(false);
+      
+      // Force the scroll position to remain the same again after a short delay
+      setTimeout(() => {
+        window.scrollTo(0, scrollY);
+      }, 50);
     }, 50);
   };
 
