@@ -529,14 +529,15 @@ function ChatRoom() {
             </div>
           </div>
           {/* Chat Section */}
-          <div className="w-[55%] sm:w-[52%] md:w-1/2 flex flex-col flex-1 min-h-0">
-            <div className="flex flex-col flex-1 min-h-0 relative">
+          <div className="w-[55%] sm:w-[52%] md:w-1/2 flex flex-col">
+            <div className="flex flex-col relative">
               {/* Chat Messages Container with consistent dimensions for all devices */}
               <div
                 ref={chatContainerRef}
-                className="flex-1 overflow-y-auto p-2 xs:p-3 sm:p-4 rounded chat-card border 
+                className="overflow-y-auto p-2 xs:p-3 sm:p-4 rounded chat-card border 
                   min-h-[40vh] xs:min-h-[45vh] sm:min-h-[50vh] md:min-h-[55vh] lg:min-h-[60vh]
                   h-[40vh] xs:h-[45vh] sm:h-[50vh] md:h-[55vh] lg:h-[60vh]
+                  max-h-[40vh] xs:max-h-[45vh] sm:max-h-[50vh] md:max-h-[55vh] lg:max-h-[60vh]
                   relative pb-4 chat-container-with-padding"
               >
                 {/* 3D Fire effect overlays */}
@@ -690,7 +691,11 @@ function ChatRoom() {
         /* Ensure consistent chat container dimensions */
         .chat-container-with-padding {
           position: relative;
-          overflow: hidden;
+          overflow-y: auto;
+          overflow-x: hidden;
+          display: block;
+          flex-grow: 0;
+          flex-shrink: 0;
         }
         
         /* Ensure fire effect is properly positioned */
@@ -702,6 +707,42 @@ function ChatRoom() {
         .is-burning {
           position: relative;
           z-index: 1;
+        }
+        
+        /* Additional styles to ensure fixed height */
+        @media (max-width: 640px) {
+          .chat-container-with-padding {
+            height: 40vh !important;
+            max-height: 40vh !important;
+          }
+        }
+        
+        @media (min-width: 641px) and (max-width: 767px) {
+          .chat-container-with-padding {
+            height: 45vh !important;
+            max-height: 45vh !important;
+          }
+        }
+        
+        @media (min-width: 768px) and (max-width: 1023px) {
+          .chat-container-with-padding {
+            height: 50vh !important;
+            max-height: 50vh !important;
+          }
+        }
+        
+        @media (min-width: 1024px) and (max-width: 1279px) {
+          .chat-container-with-padding {
+            height: 55vh !important;
+            max-height: 55vh !important;
+          }
+        }
+        
+        @media (min-width: 1280px) {
+          .chat-container-with-padding {
+            height: 60vh !important;
+            max-height: 60vh !important;
+          }
         }
       `}</style>
     </div>

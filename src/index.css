@@ -184,7 +184,8 @@
 /* Chat container styles for all devices */
 .chat-container-with-padding {
   position: relative;
-  overflow: hidden;
+  overflow: auto;
+  max-height: 100%;
 }
 
 /* Ensure the chat card has proper dimensions for the fire effect */
@@ -258,7 +259,7 @@
   
   /* Add padding for mobile chat container to account for fixed input bar */
   .chat-container-with-padding {
-    padding-bottom: 100px !important;
+    padding-bottom: 60px !important;
   }
 }
 
