@@ -178,8 +178,8 @@ function Model() {
         rotationSpeedRef.current = rotationDelta / timeDelta * 1000; // rotations per second
         
         // Check if spinning too fast and cooldown period has passed
-        const SPIN_THRESHOLD = 2.0; // Adjust this threshold as needed
-        const COOLDOWN_PERIOD = 10000; // 10 seconds cooldown
+        const SPIN_THRESHOLD = 3.5; // Adjusted threshold to reduce sensitivity
+        const COOLDOWN_PERIOD = 20000; // 20 seconds cooldown
         
         if (rotationSpeedRef.current > SPIN_THRESHOLD && 
             currentTime - lastDizzyMessageRef.current > COOLDOWN_PERIOD) {
