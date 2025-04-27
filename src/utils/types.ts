@@ -52,6 +52,7 @@ export type ConfessionType = 'venial' | 'mortal';
  */
 export interface ConfessionDropdownProps extends DisableableProps {
   onSelect: (confession: string) => void;
+  onSubmit?: (confession: string) => void;
   type?: ConfessionType;
   mobile?: boolean;
 }

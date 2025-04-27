@@ -7,6 +7,7 @@ import { VENIAL_SINS, MORTAL_SINS } from "../../utils/constants";
 /**
  * Dropdown component for selecting pre-defined confessions
  * @param onSelect - Function to call when a confession is selected
+ * @param onSubmit - Optional function to call to automatically submit the confession
  * @param disabled - Whether the dropdown is disabled
  * @param type - Type of confessions to display (venial or mortal)
  * @param mobile - Whether to use mobile layout
@@ -14,6 +15,7 @@ import { VENIAL_SINS, MORTAL_SINS } from "../../utils/constants";
  */
 export function ConfessionDropdown({ 
   onSelect, 
+  onSubmit,
   disabled, 
   type = 'venial', 
   mobile = false 
@@ -106,8 +108,13 @@ export function ConfessionDropdown({
     // Call the selectConfession function from the hook
     selectConfession(confession);
     
-    // Also call the onSelect prop for backward compatibility
+    // Call the onSelect prop for backward compatibility
     onSelect(confession);
+    
+    // If onSubmit is provided, call it to automatically submit the confession
+    if (onSubmit) {
+      onSubmit(confession);
+    }
     
     // Close the dropdown
     setIsOpen(false);

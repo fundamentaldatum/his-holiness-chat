@@ -30,6 +30,25 @@ export function InputSection({ onSubmit, onClear, disabled }: InputSectionProps)
     }
   };
   
+  // Handle confession selection and automatic submission
+  const handleSelectAndSubmitConfession = (confession: string) => {
+    console.log("Confession selected and auto-submitting:", confession);
+    
+    if (chatInputRef.current) {
+      // First set the value
+      chatInputRef.current.setValue(confession);
+      
+      // Then submit the form after a short delay to ensure the value is set
+      setTimeout(() => {
+        if (chatInputRef.current) {
+          chatInputRef.current.submitForm().catch((error: Error) => {
+            console.error("Error auto-submitting confession:", error);
+          });
+        }
+      }, 50);
+    }
+  };
+  
   // Handle submit button click
   const handleSubmitClick = () => {
     if (chatInputRef.current) {
@@ -56,8 +75,18 @@ export function InputSection({ onSubmit, onClear, disabled }: InputSectionProps)
         >
           CONFESS
         </button>
-        <ConfessionDropdown onSelect={handleSelectConfession} disabled={disabled} type="venial" />
-        <ConfessionDropdown onSelect={handleSelectConfession} disabled={disabled} type="mortal" />
+        <ConfessionDropdown 
+          onSelect={handleSelectConfession} 
+          onSubmit={handleSelectAndSubmitConfession}
+          disabled={disabled} 
+          type="venial" 
+        />
+        <ConfessionDropdown 
+          onSelect={handleSelectConfession} 
+          onSubmit={handleSelectAndSubmitConfession}
+          disabled={disabled} 
+          type="mortal" 
+        />
         <button
           onClick={onClear}
           className="almendra-font text-sm xs:text-base px-3 xs:px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 w-32 text-center"
@@ -88,12 +117,14 @@ export function InputSection({ onSubmit, onClear, disabled }: InputSectionProps)
         </button>
         <ConfessionDropdown 
           onSelect={handleSelectConfession} 
+          onSubmit={handleSelectAndSubmitConfession}
           disabled={disabled} 
           type="venial" 
           mobile={true} 
         />
         <ConfessionDropdown 
           onSelect={handleSelectConfession} 
+          onSubmit={handleSelectAndSubmitConfession}
           disabled={disabled} 
           type="mortal" 
           mobile={true} 
