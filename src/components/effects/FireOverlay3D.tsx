@@ -417,7 +417,10 @@ export function FireOverlay3D({ containerRef }: FireOverlay3DProps) {
     width: 0,
     height: 0,
     right: 0,
-    bottom: 0
+    bottom: 0,
+    scrollTop: 0,
+    visibleTop: 0,
+    visibleHeight: 0
   });
   
   // Detect screen size with granularity and update container bounds
@@ -432,16 +435,34 @@ export function FireOverlay3D({ containerRef }: FireOverlay3DProps) {
         height
       });
       
-      // Update container bounds if ref is available
+      updateContainerBounds();
+    };
+    
+    // Function to update container bounds with scroll position and visibility
+    const updateContainerBounds = () => {
       if (containerRef?.current) {
         const rect = containerRef.current.getBoundingClientRect();
+        const scrollTop = containerRef.current.scrollTop;
+        
+        // Calculate the visible portion of the container
+        const viewportTop = 0;
+        const viewportBottom = window.innerHeight;
+        
+        // Calculate how much of the container is visible in the viewport
+        const visibleTop = Math.max(rect.top, viewportTop);
+        const visibleBottom = Math.min(rect.bottom, viewportBottom);
+        const visibleHeight = Math.max(0, visibleBottom - visibleTop);
+        
         setContainerBounds({
           top: rect.top,
           left: rect.left,
           width: rect.width,
           height: rect.height,
           right: rect.right,
-          bottom: rect.bottom
+          bottom: rect.bottom,
+          scrollTop: scrollTop,
+          visibleTop: visibleTop,
+          visibleHeight: visibleHeight
         });
       }
     };
@@ -452,16 +473,28 @@ export function FireOverlay3D({ containerRef }: FireOverlay3DProps) {
     // Add resize listener
     window.addEventListener('resize', checkScreenSize);
     
+    // Add scroll listener to the container
+    const scrollHandler = () => {
+      requestAnimationFrame(updateContainerBounds);
+    };
+    
+    if (containerRef?.current) {
+      containerRef.current.addEventListener('scroll', scrollHandler, { passive: true });
+    }
+    
     // Create a ResizeObserver to detect changes in the container size
     let observer: ResizeObserver | null = null;
     if (containerRef?.current) {
-      observer = new ResizeObserver(checkScreenSize);
+      observer = new ResizeObserver(updateContainerBounds);
       observer.observe(containerRef.current);
     }
     
     // Cleanup
     return () => {
       window.removeEventListener('resize', checkScreenSize);
+      if (containerRef?.current) {
+        containerRef.current.removeEventListener('scroll', scrollHandler);
+      }
       if (observer) {
         observer.disconnect();
       }
@@ -500,7 +533,7 @@ export function FireOverlay3D({ containerRef }: FireOverlay3DProps) {
     return style;
   }, [screenSize]);
   
-  // Calculate the fixed overlay style based on container bounds
+  // Calculate the fixed overlay style based on container bounds and scroll position
   const overlayStyle: React.CSSProperties = useMemo(() => {
     // Default style if no container bounds are available
     if (containerBounds.width === 0 || !containerRef?.current) {
@@ -516,7 +549,38 @@ export function FireOverlay3D({ containerRef }: FireOverlay3DProps) {
       };
     }
     
-    // Style based on container bounds
+    // For mobile devices, we need to adjust the position based on scroll
+    if (screenSize.isMobile) {
+      // Get the visible portion of the chat container
+      const visibleTop = containerBounds.visibleTop;
+      const visibleHeight = containerBounds.visibleHeight;
+      
+      // If the container is at least partially visible
+      if (visibleHeight > 0) {
+        return {
+          position: 'fixed',
+          top: `${visibleTop}px`,
+          left: `${containerBounds.left}px`,
+          width: `${containerBounds.width}px`,
+          height: `${visibleHeight}px`,
+          overflow: 'hidden'
+        };
+      } else {
+        // If container is not visible, position it in the middle of the viewport
+        return {
+          position: 'fixed',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: `${containerBounds.width}px`,
+          height: '50vh',
+          maxHeight: '300px',
+          overflow: 'hidden'
+        };
+      }
+    }
+    
+    // For desktop, use the original positioning
     return {
       position: 'fixed',
       top: `${containerBounds.top}px`,
@@ -525,7 +589,7 @@ export function FireOverlay3D({ containerRef }: FireOverlay3DProps) {
       height: `${containerBounds.height}px`,
       overflow: 'hidden'
     };
-  }, [containerBounds, containerRef]);
+  }, [containerBounds, containerRef, screenSize.isMobile]);
   
   // The overlay is sized to cover the chat area with fixed positioning to ensure visibility regardless of scroll
   return (

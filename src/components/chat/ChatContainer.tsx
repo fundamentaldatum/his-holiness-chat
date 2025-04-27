@@ -39,16 +39,45 @@ export function ChatContainer({ messages, isBurning }: ChatContainerProps) {
       {/* 3D Fire effect overlays - pass container ref for positioning */}
       {isBurning && <FireOverlay3D containerRef={chatContainerRef} />}
       
-      {/* Overlay message during burning - positioned within the chat container */}
+      {/* Overlay message during burning - positioned within the visible portion of the chat container */}
       {isBurning && (
         <div
           className="fixed flex items-center justify-center z-[100] pointer-events-none"
           style={{
             animation: `fadeInOut ${BURNING_ANIMATION_DURATION}ms linear`,
-            top: chatContainerRef.current ? chatContainerRef.current.getBoundingClientRect().top + 'px' : '50%',
+            // Calculate the visible portion of the chat container
+            top: (() => {
+              if (!chatContainerRef.current) return '50%';
+              const rect = chatContainerRef.current.getBoundingClientRect();
+              const viewportTop = 0;
+              const viewportBottom = window.innerHeight;
+              // Get the visible portion of the container
+              const visibleTop = Math.max(rect.top, viewportTop);
+              const visibleBottom = Math.min(rect.bottom, viewportBottom);
+              const visibleHeight = Math.max(0, visibleBottom - visibleTop);
+              
+              // If container is at least partially visible, position at the visible top
+              if (visibleHeight > 0) {
+                return visibleTop + 'px';
+              } else {
+                // If not visible, position in the middle of the viewport
+                return '50%';
+              }
+            })(),
             left: chatContainerRef.current ? chatContainerRef.current.getBoundingClientRect().left + 'px' : '50%',
             width: chatContainerRef.current ? chatContainerRef.current.getBoundingClientRect().width + 'px' : '80%',
-            height: chatContainerRef.current ? chatContainerRef.current.getBoundingClientRect().height + 'px' : '80%',
+            height: (() => {
+              if (!chatContainerRef.current) return '80%';
+              const rect = chatContainerRef.current.getBoundingClientRect();
+              const viewportTop = 0;
+              const viewportBottom = window.innerHeight;
+              // Calculate visible height
+              const visibleTop = Math.max(rect.top, viewportTop);
+              const visibleBottom = Math.min(rect.bottom, viewportBottom);
+              const visibleHeight = Math.max(0, visibleBottom - visibleTop);
+              
+              return visibleHeight > 0 ? visibleHeight + 'px' : '300px';
+            })(),
             transform: chatContainerRef.current ? 'none' : 'translate(-50%, -50%)'
           }}
         >

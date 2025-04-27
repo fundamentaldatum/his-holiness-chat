@@ -253,6 +253,29 @@ body, html {
   animation: fireOverlayFadeIn 0.3s ease-in-out;
 }
 
+/* Ensure fire overlay is properly positioned in the viewport */
+.pointer-events-none.z-\[100\] {
+  position: fixed !important;
+  z-index: 100 !important;
+  pointer-events: none !important;
+  overflow: hidden !important;
+}
+
+/* Mobile-specific fire overlay adjustments */
+@media (max-width: 767px) {
+  .pointer-events-none.z-\[100\] {
+    max-height: 100vh !important;
+    max-width: 100vw !important;
+  }
+  
+  /* Ensure the fire animation is visible in the viewport */
+  .pointer-events-none.z-\[100\] canvas {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+  }
+}
+
 /* Ensure the canvas is properly sized */
 .chat-card canvas {
   width: 100% !important;
