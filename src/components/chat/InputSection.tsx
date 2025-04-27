@@ -67,7 +67,7 @@ export function InputSection({ onSubmit, onClear, disabled }: InputSectionProps)
       </div>
       
       {/* Buttons */}
-      <div className="flex flex-wrap justify-center gap-2 xs:gap-3 sm:gap-4 w-full py-2 xs:py-3">
+      <div className="flex flex-nowrap justify-center gap-2 xs:gap-3 sm:gap-4 w-full py-2 xs:py-3">
         <button
           onClick={handleSubmitClick}
           className="almendra-font text-sm xs:text-base px-3 xs:px-4 py-2 bg-indigo-700 text-white rounded hover:bg-indigo-800 w-32 text-center"
