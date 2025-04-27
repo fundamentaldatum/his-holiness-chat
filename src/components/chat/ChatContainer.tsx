@@ -36,15 +36,20 @@ export function ChatContainer({ messages, isBurning }: ChatContainerProps) {
       }}
       tabIndex={0}
     >
-      {/* 3D Fire effect overlays */}
-      {isBurning && <FireOverlay3D />}
+      {/* 3D Fire effect overlays - pass container ref for positioning */}
+      {isBurning && <FireOverlay3D containerRef={chatContainerRef} />}
       
-      {/* Overlay message during burning */}
+      {/* Overlay message during burning - positioned within the chat container */}
       {isBurning && (
         <div
-          className="absolute inset-0 flex items-center justify-center z-50 pointer-events-none"
+          className="fixed flex items-center justify-center z-[100] pointer-events-none"
           style={{
             animation: `fadeInOut ${BURNING_ANIMATION_DURATION}ms linear`,
+            top: chatContainerRef.current ? chatContainerRef.current.getBoundingClientRect().top + 'px' : '50%',
+            left: chatContainerRef.current ? chatContainerRef.current.getBoundingClientRect().left + 'px' : '50%',
+            width: chatContainerRef.current ? chatContainerRef.current.getBoundingClientRect().width + 'px' : '80%',
+            height: chatContainerRef.current ? chatContainerRef.current.getBoundingClientRect().height + 'px' : '80%',
+            transform: chatContainerRef.current ? 'none' : 'translate(-50%, -50%)'
           }}
         >
           <span

@@ -401,7 +401,7 @@ function ResponsiveCamera() {
 /**
  * 3D fire overlay for burning animation
  */
-export function FireOverlay3D({}: FireOverlay3DProps) {
+export function FireOverlay3D({ containerRef }: FireOverlay3DProps) {
   // Enhanced state to track screen size more precisely
   const [screenSize, setScreenSize] = useState({
     isMobile: false,
@@ -410,7 +410,17 @@ export function FireOverlay3D({}: FireOverlay3DProps) {
     height: 0
   });
   
-  // Detect screen size with more granularity
+  // State to track chat container position and dimensions
+  const [containerBounds, setContainerBounds] = useState({
+    top: 0,
+    left: 0,
+    width: 0,
+    height: 0,
+    right: 0,
+    bottom: 0
+  });
+  
+  // Detect screen size with granularity and update container bounds
   useEffect(() => {
     const checkScreenSize = () => {
       const width = window.innerWidth;
@@ -421,6 +431,19 @@ export function FireOverlay3D({}: FireOverlay3DProps) {
         width,
         height
       });
+      
+      // Update container bounds if ref is available
+      if (containerRef?.current) {
+        const rect = containerRef.current.getBoundingClientRect();
+        setContainerBounds({
+          top: rect.top,
+          left: rect.left,
+          width: rect.width,
+          height: rect.height,
+          right: rect.right,
+          bottom: rect.bottom
+        });
+      }
     };
     
     // Check initially
@@ -429,15 +452,27 @@ export function FireOverlay3D({}: FireOverlay3DProps) {
     // Add resize listener
     window.addEventListener('resize', checkScreenSize);
     
+    // Create a ResizeObserver to detect changes in the container size
+    let observer: ResizeObserver | null = null;
+    if (containerRef?.current) {
+      observer = new ResizeObserver(checkScreenSize);
+      observer.observe(containerRef.current);
+    }
+    
     // Cleanup
-    return () => window.removeEventListener('resize', checkScreenSize);
-  }, []);
+    return () => {
+      window.removeEventListener('resize', checkScreenSize);
+      if (observer) {
+        observer.disconnect();
+      }
+    };
+  }, [containerRef]);
   
   // Adjust particle counts based on screen size with more granularity
   const fireParticleCount = screenSize.isSmallMobile ? 80 : (screenSize.isMobile ? 120 : 220);
   const smokeParticleCount = screenSize.isSmallMobile ? 15 : (screenSize.isMobile ? 25 : 50);
   
-  // Calculate optimal container style based on screen size
+  // Calculate optimal container style based on container bounds and screen size
   const containerStyle = useMemo(() => {
     // Base styles
     const style: React.CSSProperties = {
@@ -465,9 +500,39 @@ export function FireOverlay3D({}: FireOverlay3DProps) {
     return style;
   }, [screenSize]);
   
-  // The overlay is sized to cover the chat area with improved positioning
+  // Calculate the fixed overlay style based on container bounds
+  const overlayStyle: React.CSSProperties = useMemo(() => {
+    // Default style if no container bounds are available
+    if (containerBounds.width === 0 || !containerRef?.current) {
+      return {
+        position: 'fixed',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        width: '80%',
+        height: '80%',
+        maxWidth: '500px',
+        maxHeight: '500px'
+      };
+    }
+    
+    // Style based on container bounds
+    return {
+      position: 'fixed',
+      top: `${containerBounds.top}px`,
+      left: `${containerBounds.left}px`,
+      width: `${containerBounds.width}px`,
+      height: `${containerBounds.height}px`,
+      overflow: 'hidden'
+    };
+  }, [containerBounds, containerRef]);
+  
+  // The overlay is sized to cover the chat area with fixed positioning to ensure visibility regardless of scroll
   return (
-    <div className="absolute inset-0 pointer-events-none z-50 flex items-center justify-center overflow-hidden">
+    <div 
+      className="pointer-events-none z-[100] flex items-center justify-center overflow-hidden"
+      style={overlayStyle}
+    >
       <div className="w-full h-full min-h-[200px] relative">
         <Canvas
           orthographic

@@ -95,7 +95,7 @@ export interface AbsolveModalProps {
  * Props for the FireOverlay3D component
  */
 export interface FireOverlay3DProps {
-  // No props needed for now, but keeping the interface for future extensibility
+  containerRef?: React.RefObject<HTMLDivElement | null>;
 }
 
 /**
