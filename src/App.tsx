@@ -310,6 +310,9 @@ function ChatRoom() {
   const [isBurning, setIsBurning] = useState(false);
   const [showAbsolveModal, setShowAbsolveModal] = useState(false);
   const [isScrolledUp, setIsScrolledUp] = useState(false);
+  const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
+  const lastScrollHeightRef = useRef<number>(0);
+  const observerRef = useRef<MutationObserver | null>(null);
 
   // Track when messages are loaded
   useEffect(() => {
@@ -317,6 +320,37 @@ function ChatRoom() {
       messagesLoaded.current = true;
     }
   }, [messages]);
+  
+  // Set up MutationObserver to detect changes in chat content
+  useEffect(() => {
+    const chatContainer = chatContainerRef.current;
+    if (!chatContainer) return;
+    
+    // Create a new MutationObserver
+    const observer = new MutationObserver((mutations) => {
+      // Only auto-scroll if we're already at the bottom or shouldAutoScroll is true
+      if (shouldAutoScroll) {
+        scrollToBottom();
+      }
+    });
+    
+    // Start observing the chat container for DOM changes
+    observer.observe(chatContainer, {
+      childList: true,      // Watch for changes to child elements
+      subtree: true,        // Watch all descendants, not just direct children
+      characterData: true,  // Watch for changes to text content
+      attributes: false     // Don't need to watch attributes
+    });
+    
+    // Store the observer in the ref
+    observerRef.current = observer;
+    
+    // Clean up the observer when the component unmounts
+    return () => {
+      observer.disconnect();
+      observerRef.current = null;
+    };
+  }, [shouldAutoScroll]);
   
   // Set app height custom property for mobile browsers
   useEffect(() => {
@@ -374,45 +408,74 @@ function ChatRoom() {
     }
   }, [welcomeShown, messages, sendBotMessage, userId]);
 
-  // Detect scroll position to show/hide scroll-to-bottom button
+  // Detect scroll position to show/hide scroll-to-bottom button and determine auto-scroll behavior
   useEffect(() => {
     const chatContainer = chatContainerRef.current;
     if (!chatContainer) return;
     
     const handleScroll = () => {
+      // Calculate distance from bottom
+      const distanceFromBottom = chatContainer.scrollHeight - chatContainer.scrollTop - chatContainer.clientHeight;
+      
       // Show button when scrolled up more than 100px from bottom
-      const isScrolled = chatContainer.scrollHeight - chatContainer.scrollTop - chatContainer.clientHeight > 100;
+      const isScrolled = distanceFromBottom > 100;
       setIsScrolledUp(isScrolled);
+      
+      // Only auto-scroll if we're close to the bottom (within 50px)
+      setShouldAutoScroll(distanceFromBottom < 50);
+      
+      // Store the current scroll height for comparison
+      lastScrollHeightRef.current = chatContainer.scrollHeight;
     };
     
     chatContainer.addEventListener('scroll', handleScroll);
     return () => chatContainer.removeEventListener('scroll', handleScroll);
   }, []);
   
-  // Scroll to bottom function
+  // Enhanced scroll to bottom function
   const scrollToBottom = useCallback(() => {
     if (chatContainerRef.current) {
-      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+      // Smooth scroll to bottom
+      chatContainerRef.current.scrollTo({
+        top: chatContainerRef.current.scrollHeight,
+        behavior: 'smooth'
+      });
       setIsScrolledUp(false);
+      setShouldAutoScroll(true);
     }
   }, []);
   
-  // Scroll to bottom when messages change or after a short delay (for mobile keyboard)
+  // Enhanced scroll to bottom when messages change
   useEffect(() => {
-    if (chatContainerRef.current) {
-      // Immediate scroll
-      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
-      
-      // Additional scroll after a short delay (helps with mobile keyboard appearance)
-      const scrollTimeout = setTimeout(() => {
-        if (chatContainerRef.current) {
+    if (!chatContainerRef.current || !shouldAutoScroll) return;
+    
+    // Immediate scroll
+    chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    
+    // Additional scrolls with increasing delays to handle various scenarios
+    // This helps with both mobile keyboard appearance and incremental text updates
+    const scrollTimeouts = [
+      setTimeout(() => {
+        if (chatContainerRef.current && shouldAutoScroll) {
           chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
         }
-      }, 100);
+      }, 100),
       
-      return () => clearTimeout(scrollTimeout);
-    }
-  }, [messages]);
+      setTimeout(() => {
+        if (chatContainerRef.current && shouldAutoScroll) {
+          chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+        }
+      }, 300),
+      
+      setTimeout(() => {
+        if (chatContainerRef.current && shouldAutoScroll) {
+          chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+        }
+      }, 500)
+    ];
+    
+    return () => scrollTimeouts.forEach(clearTimeout);
+  }, [messages, shouldAutoScroll]);
 
   const handleClear = () => {
     setShowAbsolveModal(true);
@@ -442,10 +505,11 @@ function ChatRoom() {
       userId: userId,
     });
     
+    // Enable auto-scrolling when sending a message
+    setShouldAutoScroll(true);
+    
     // Scroll to bottom after sending a message
-    if (chatContainerRef.current) {
-      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
-    }
+    scrollToBottom();
   };
   
   // Handle selecting a confession from the dropdown
