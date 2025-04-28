@@ -63,7 +63,7 @@ export const MORTAL_SINS = [
   "I defrauded my local parish through a highly-complicated embezzlement scheme for my own personal enrichment",
   "I observed the Sabbath day on a Wednesday",
   "I used my $150 in free Bonus Bets on Fan Duel to participate in rigging the World Series",
-  "I lied to the Pope about how I used my $150 in free bonus bets on Fan Duel",
+  "I lied to the Pope about how I used my $150 in free Bonus Bets on Fan Duel",
   "I got baptized at 4 different churches and 2 different county jails",
   "I convinced my friend that there is a book in the Bible called \"Mitchell\"",
   "I defrauded my local parish through a highly-complicated embezzlement scheme for my own personal enrichment again"
